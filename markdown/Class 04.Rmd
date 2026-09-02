@@ -1,0 +1,137 @@
+---
+title: "Class 04"
+author: "Lindsey Carothers"
+date: "2026-09-02"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    number_sections: true
+    code_download: true
+    code_folding: show
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r}
+crashes_by_day = c(2020, 2241, 2327, 2285, 2380, 1866, 1664)
+names(crashes_by_day) = c("Mon", "Tue", "Wed", "Thu",
+                          "Fri", "Sat", "Sun")
+```
+
+# From Vectors to a Data Frame
+```{r}
+crashes_df = tibble::tibble(
+  day     = names(crashes_by_day),
+  crashes = crashes_by_day,
+  busy    = crashes_by_day > 2000
+)
+crashes_df 
+```
+
+# Looking at a Data Frame
+```{r}
+nrow(crashes_df)             # how many rows?
+ncol(crashes_df)             # how many columns?
+colnames(crashes_df)         # what are they called?
+typeof(crashes_df)           # what is it underneath?
+
+# gives a data frame summary (like str() but neater)
+dplyr::glimpse(crashes_df) # one lime per column
+```
+
+# A List Holds Anything
+```{r}
+example_list = list(
+  1:3,                    # integers 1, 2, 3
+  "a",                    # one piece of text
+  c(TRUE, FALSE, TRUE),   # three logicals
+  c(2.3, 5.9)             # two decimals
+)
+str(example_list)         # the x-ray view
+```
+
+# [] vs [[]] on a List
+```{r}
+str(example_list[1])     # [ ]  the shaker: a list of 1
+
+str(example_list[[1]])   # [[ ]] the packet: the element
+
+example_list[[1]][[1]]   # the pepper: first value in it
+
+example_list[[4]][2]     # element 4, then its 2nd value
+```
+
+# Examine a Job Ad
+```{r rob_ad}
+job = list(
+  title   = "Research Data Scientist, Magic Eye",
+  company = "Google",
+  salary  = list(min = 147000, max = 210000)
+)
+str(job)
+```
+
+
+```{r}
+# 1. The company name.
+company_name <- job$company # or job[[2]]; job[2] would return a list 
+company_name
+company_name_as_named_list <- job[2] # we typically no do want this
+
+# 2. The maximum salary.
+max_sal <- job$salary$max
+
+# 3. The maximum salary again, using only [[ ]].
+job[[3]][[2]]
+
+# 4. The names of the elements in job.
+names(job)
+```
+
+# Subsetting 
+- Getting a subset of a the object's data for analysis
+
+## Vectors
+- You can subset by position 9i.e., a number) or by a name if it is a named vector;
+- You can also pass a vector (e.g., logical condition, 2:4. or c()) for subsetting the vector
+
+```{r vectors}
+crashes_by_day[2]                      # one position
+
+crashes_by_day["Fri"]                  # by name
+
+crashes_by_day[crashes_by_day > 2300]  # by condition
+
+crashes_by_day[2:4]                    # you can give consecutive numbers
+
+crashes_by_day[c('Mon', 'Fri')]        # crashes_by_day[c(1,5)]
+
+```
+
+## Data Frames
+```{r}
+crashes_df = tibble::tibble(
+  day     = names(crashes_by_day),
+  crashes = crashes_by_day,
+  busy    = crashes_by_day > 2000)
+crashes_df$crashes                     # one column, as a vector
+
+crashes_df[["crashes"]]                # the same vector, by name
+
+crashes_df[1:2, c("day", "crashes")]   # rows 1 to 2, two columns
+# These both return the same
+  # crashes_df[1:2, 1:2]
+  # crashes_df[1:2, c(1,2)]
+```
+
+# Ohio Jobs
+
+```{r}
+oh_jobs = readr::read_csv( file = "https://fred.stlouisfed.org/graph/fredgraph.csv?bgcolor=%23ebf3fb&chart_type=line&drp=0&fo=open%20sans&graph_bgcolor=%23ffffff&height=450&mode=fred&recession_bars=on&txtcolor=%23444444&ts=12&tts=12&width=867&nt=0&thu=0&trc=0&show_legend=yes&show_axis_titles=yes&show_tooltip=yes&id=IHLIDXUSOH&scale=left&cosd=2021-08-28&coed=2026-08-28&line_color=%230073e6&link_values=false&line_style=solid&mark_type=none&mw=3&lw=3&ost=-99999&oet=99999&mma=0&fml=a&fq=Daily%2C%207-Day&fam=avg&fgst=lin&fgsnd=2020-02-01&line_index=1&transformation=lin&vintage_date=2026-09-02&revision_date=2026-09-02&nd=2020-02-01"
+)
+
+oh_job_base_r = read.csv( file = "https://fred.stlouisfed.org/graph/fredgraph.csv?bgcolor=%23ebf3fb&chart_type=line&drp=0&fo=open%20sans&graph_bgcolor=%23ffffff&height=450&mode=fred&recession_bars=on&txtcolor=%23444444&ts=12&tts=12&width=867&nt=0&thu=0&trc=0&show_legend=yes&show_axis_titles=yes&show_tooltip=yes&id=IHLIDXUSOH&scale=left&cosd=2021-08-28&coed=2026-08-28&line_color=%230073e6&link_values=false&line_style=solid&mark_type=none&mw=3&lw=3&ost=-99999&oet=99999&mma=0&fml=a&fq=Daily%2C%207-Day&fam=avg&fgst=lin&fgsnd=2020-02-01&line_index=1&transformation=lin&vintage_date=2026-09-02&revision_date=2026-09-02&nd=2020-02-01")
+```
