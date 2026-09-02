@@ -131,13 +131,13 @@ crashes_df[1:2, c("day", "crashes")]   # rows 1 to 2, two columns
 # Ohio Jobs
 
 ```{r ohio_jobs}
-# oh_jobs = readr::read_csv(
-#   file="https://fred.stlouisfed.org/graph/fredgraph.csv?bgcolor=%23ebf3fb&chart_type=line&drp=0&fo=open%20sans&graph_bgcolor=%23ffffff&height=450&mode=fred&recession_bars=on&txtcolor=%23444444&ts=12&tts=12&width=1140&nt=0&thu=0&trc=0&show_legend=yes&show_axis_titles=yes&show_tooltip=yes&id=IHLIDXUSOH&scale=left&cosd=2021-08-28&coed=2026-08-28&line_color=%230073e6&link_values=false&line_style=solid&mark_type=none&mw=3&lw=3&ost=-99999&oet=99999&mma=0&fml=a&fq=Daily%2C%207-Day&fam=avg&fgst=lin&fgsnd=2020-02-01&line_index=1&transformation=lin&vintage_date=2026-09-02&revision_date=2026-09-02&nd=2020-02-01"
-# )
+## Original Class Code
+# oh_jobs = readr::read_csv(file="https://fred.stlouisfed.org/graph/fredgraph.csv?bgcolor=%23ebf3fb&chart_type=line&drp=0&fo=open%20sans&graph_bgcolor=%23ffffff&height=450&mode=fred&recession_bars=on&txtcolor=%23444444&ts=12&tts=12&width=1140&nt=0&thu=0&trc=0&show_legend=yes&show_axis_titles=yes&show_tooltip=yes&id=IHLIDXUSOH&scale=left&cosd=2021-08-28&coed=2026-08-28&line_color=%230073e6&link_values=false&line_style=solid&mark_type=none&mw=3&lw=3&ost=-99999&oet=99999&mma=0&fml=a&fq=Daily%2C%207-Day&fam=avg&fgst=lin&fgsnd=2020-02-01&line_index=1&transformation=lin&vintage_date=2026-09-02&revision_date=2026-09-02&nd=2020-02-01")
 
+# I'm having a curl and/or vroom issue
+
+# AI told me to do the following
 fred_url <- "https://fred.stlouisfed.org/graph/fredgraph.csv?bgcolor=%23ebf3fb&chart_type=line&drp=0&fo=open%20sans&graph_bgcolor=%23ffffff&height=450&mode=fred&recession_bars=on&txtcolor=%23444444&ts=12&tts=12&width=1140&nt=0&thu=0&trc=0&show_legend=yes&show_axis_titles=yes&show_tooltip=yes&id=IHLIDXUSOH&scale=left&cosd=2021-08-28&coed=2026-08-28&line_color=%230073e6&link_values=false&line_style=solid&mark_type=none&mw=3&lw=3&ost=-99999&oet=99999&mma=0&fml=a&fq=Daily%2C%207-Day&fam=avg&fgst=lin&fgsnd=2020-02-01&line_index=1&transformation=lin&vintage_date=2026-09-02&revision_date=2026-09-02&nd=2020-02-01"
-
-# https://fred.stlouisfed.org/graph/fredgraph.csv?id=IHLIDXUSOH
 
 fred_file <- tempfile(fileext = ".csv")
 
@@ -148,7 +148,6 @@ download.file(
 )
 
 oh_jobs <- readr::read_csv(fred_file)
-
 
 oh_jobs_baser= read.csv("https://fred.stlouisfed.org/graph/fredgraph.csv?bgcolor=%23ebf3fb&chart_type=line&drp=0&fo=open%20sans&graph_bgcolor=%23ffffff&height=450&mode=fred&recession_bars=on&txtcolor=%23444444&ts=12&tts=12&width=1140&nt=0&thu=0&trc=0&show_legend=yes&show_axis_titles=yes&show_tooltip=yes&id=IHLIDXUSOH&scale=left&cosd=2021-08-28&coed=2026-08-28&line_color=%230073e6&link_values=false&line_style=solid&mark_type=none&mw=3&lw=3&ost=-99999&oet=99999&mma=0&fml=a&fq=Daily%2C%207-Day&fam=avg&fgst=lin&fgsnd=2020-02-01&line_index=1&transformation=lin&vintage_date=2026-09-02&revision_date=2026-09-02&nd=2020-02-01")
 
