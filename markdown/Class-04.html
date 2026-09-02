@@ -1594,9 +1594,18 @@ border-radius: 0px;
 </div>
 
 
+<pre class="r"><code>crashes_by_day = c(2020, 2241, 2327, 2285, 2380, 1866, 1664)
+names(crashes_by_day) = c(&quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;,
+                          &quot;Fri&quot;, &quot;Sat&quot;, &quot;Sun&quot;)</code></pre>
 <div id="from-vectors-to-a-data-frame" class="section level1" number="1">
 <h1><span class="header-section-number">1</span> From Vectors to a Data
 Frame</h1>
+<pre class="r"><code>crashes_df = tibble::tibble(
+  day     = names(crashes_by_day),
+  crashes = crashes_by_day,
+  busy    = crashes_by_day &gt; 2000
+)
+crashes_df </code></pre>
 <pre><code>## # A tibble: 7 × 3
 ##   day   crashes busy 
 ##   &lt;chr&gt;   &lt;dbl&gt; &lt;lgl&gt;
@@ -1611,10 +1620,16 @@ Frame</h1>
 <div id="looking-at-a-data-frame" class="section level1" number="2">
 <h1><span class="header-section-number">2</span> Looking at a Data
 Frame</h1>
+<pre class="r"><code>nrow(crashes_df)             # how many rows?</code></pre>
 <pre><code>## [1] 7</code></pre>
+<pre class="r"><code>ncol(crashes_df)             # how many columns?</code></pre>
 <pre><code>## [1] 3</code></pre>
+<pre class="r"><code>colnames(crashes_df)         # what are they called?</code></pre>
 <pre><code>## [1] &quot;day&quot;     &quot;crashes&quot; &quot;busy&quot;</code></pre>
+<pre class="r"><code>typeof(crashes_df)           # what is it underneath?</code></pre>
 <pre><code>## [1] &quot;list&quot;</code></pre>
+<pre class="r"><code># gives a data frame summary (like str() but neater)
+dplyr::glimpse(crashes_df) # one lime per column</code></pre>
 <pre><code>## Rows: 7
 ## Columns: 3
 ## $ day     &lt;chr&gt; &quot;Mon&quot;, &quot;Tue&quot;, &quot;Wed&quot;, &quot;Thu&quot;, &quot;Fri&quot;, &quot;Sat&quot;, &quot;Sun&quot;
@@ -1624,6 +1639,13 @@ Frame</h1>
 <div id="a-list-holds-anything" class="section level1" number="3">
 <h1><span class="header-section-number">3</span> A List Holds
 Anything</h1>
+<pre class="r"><code>example_list = list(
+  1:3,                    # integers 1, 2, 3
+  &quot;a&quot;,                    # one piece of text
+  c(TRUE, FALSE, TRUE),   # three logicals
+  c(2.3, 5.9)             # two decimals
+)
+str(example_list)         # the x-ray view</code></pre>
 <pre><code>## List of 4
 ##  $ : int [1:3] 1 2 3
 ##  $ : chr &quot;a&quot;
@@ -1633,22 +1655,44 @@ Anything</h1>
 <div id="vs-on-a-list" class="section level1" number="4">
 <h1><span class="header-section-number">4</span> [] vs [[]] on a
 List</h1>
+<pre class="r"><code>str(example_list[1])     # [ ]  the shaker: a list of 1</code></pre>
 <pre><code>## List of 1
 ##  $ : int [1:3] 1 2 3</code></pre>
+<pre class="r"><code>str(example_list[[1]])   # [[ ]] the packet: the element</code></pre>
 <pre><code>##  int [1:3] 1 2 3</code></pre>
+<pre class="r"><code>example_list[[1]][[1]]   # the pepper: first value in it</code></pre>
 <pre><code>## [1] 1</code></pre>
+<pre class="r"><code>example_list[[4]][2]     # element 4, then its 2nd value</code></pre>
 <pre><code>## [1] 5.9</code></pre>
 </div>
 <div id="examine-a-job-ad" class="section level1" number="5">
 <h1><span class="header-section-number">5</span> Examine a Job Ad</h1>
+<pre class="r"><code>job = list(
+  title   = &quot;Research Data Scientist, Magic Eye&quot;,
+  company = &quot;Google&quot;,
+  salary  = list(min = 147000, max = 210000)
+)
+str(job)</code></pre>
 <pre><code>## List of 3
 ##  $ title  : chr &quot;Research Data Scientist, Magic Eye&quot;
 ##  $ company: chr &quot;Google&quot;
 ##  $ salary :List of 2
 ##   ..$ min: num 147000
 ##   ..$ max: num 210000</code></pre>
+<pre class="r"><code># 1. The company name.
+company_name &lt;- job$company # or job[[2]]; job[2] would return a list 
+company_name</code></pre>
 <pre><code>## [1] &quot;Google&quot;</code></pre>
+<pre class="r"><code>company_name_as_named_list &lt;- job[2] # we typically no do want this
+
+# 2. The maximum salary.
+max_sal &lt;- job$salary$max
+
+# 3. The maximum salary again, using only [[ ]].
+job[[3]][[2]]</code></pre>
 <pre><code>## [1] 210000</code></pre>
+<pre class="r"><code># 4. The names of the elements in job.
+names(job)</code></pre>
 <pre><code>## [1] &quot;title&quot;   &quot;company&quot; &quot;salary&quot;</code></pre>
 </div>
 <div id="subsetting" class="section level1" number="6">
@@ -1664,32 +1708,64 @@ named vector;</li>
 <li>You can also pass a vector (e.g., logical condition, 2:4. or c())
 for subsetting the vector</li>
 </ul>
+<pre class="r"><code>crashes_by_day[2]                      # one position</code></pre>
 <pre><code>##  Tue 
 ## 2241</code></pre>
+<pre class="r"><code>crashes_by_day[&quot;Fri&quot;]                  # by name</code></pre>
 <pre><code>##  Fri 
 ## 2380</code></pre>
+<pre class="r"><code>crashes_by_day[crashes_by_day &gt; 2300]  # by condition</code></pre>
 <pre><code>##  Wed  Fri 
 ## 2327 2380</code></pre>
+<pre class="r"><code>crashes_by_day[2:4]                    # you can give consecutive numbers</code></pre>
 <pre><code>##  Tue  Wed  Thu 
 ## 2241 2327 2285</code></pre>
+<pre class="r"><code>crashes_by_day[c(&#39;Mon&#39;, &#39;Fri&#39;)]        # crashes_by_day[c(1,5)]</code></pre>
 <pre><code>##  Mon  Fri 
 ## 2020 2380</code></pre>
 </div>
 <div id="data-frames" class="section level2" number="6.2">
 <h2><span class="header-section-number">6.2</span> Data Frames</h2>
+<pre class="r"><code>crashes_df = tibble::tibble(
+  day     = names(crashes_by_day),
+  crashes = crashes_by_day,
+  busy    = crashes_by_day &gt; 2000)
+crashes_df$crashes                     # one column, as a vector</code></pre>
 <pre><code>##  Mon  Tue  Wed  Thu  Fri  Sat  Sun 
 ## 2020 2241 2327 2285 2380 1866 1664</code></pre>
+<pre class="r"><code>crashes_df[[&quot;crashes&quot;]]                # the same vector, by name</code></pre>
 <pre><code>##  Mon  Tue  Wed  Thu  Fri  Sat  Sun 
 ## 2020 2241 2327 2285 2380 1866 1664</code></pre>
+<pre class="r"><code>crashes_df[1:2, c(&quot;day&quot;, &quot;crashes&quot;)]   # rows 1 to 2, two columns</code></pre>
 <pre><code>## # A tibble: 2 × 2
 ##   day   crashes
 ##   &lt;chr&gt;   &lt;dbl&gt;
 ## 1 Mon      2020
 ## 2 Tue      2241</code></pre>
+<pre class="r"><code># These both return the same
+  # crashes_df[1:2, 1:2]
+  # crashes_df[1:2, c(1,2)]</code></pre>
 </div>
 </div>
 <div id="ohio-jobs" class="section level1" number="7">
 <h1><span class="header-section-number">7</span> Ohio Jobs</h1>
+<pre class="r"><code># oh_jobs = readr::read_csv(
+#   file=&quot;https://fred.stlouisfed.org/graph/fredgraph.csv?bgcolor=%23ebf3fb&amp;chart_type=line&amp;drp=0&amp;fo=open%20sans&amp;graph_bgcolor=%23ffffff&amp;height=450&amp;mode=fred&amp;recession_bars=on&amp;txtcolor=%23444444&amp;ts=12&amp;tts=12&amp;width=1140&amp;nt=0&amp;thu=0&amp;trc=0&amp;show_legend=yes&amp;show_axis_titles=yes&amp;show_tooltip=yes&amp;id=IHLIDXUSOH&amp;scale=left&amp;cosd=2021-08-28&amp;coed=2026-08-28&amp;line_color=%230073e6&amp;link_values=false&amp;line_style=solid&amp;mark_type=none&amp;mw=3&amp;lw=3&amp;ost=-99999&amp;oet=99999&amp;mma=0&amp;fml=a&amp;fq=Daily%2C%207-Day&amp;fam=avg&amp;fgst=lin&amp;fgsnd=2020-02-01&amp;line_index=1&amp;transformation=lin&amp;vintage_date=2026-09-02&amp;revision_date=2026-09-02&amp;nd=2020-02-01&quot;
+# )
+
+fred_url &lt;- &quot;https://fred.stlouisfed.org/graph/fredgraph.csv?bgcolor=%23ebf3fb&amp;chart_type=line&amp;drp=0&amp;fo=open%20sans&amp;graph_bgcolor=%23ffffff&amp;height=450&amp;mode=fred&amp;recession_bars=on&amp;txtcolor=%23444444&amp;ts=12&amp;tts=12&amp;width=1140&amp;nt=0&amp;thu=0&amp;trc=0&amp;show_legend=yes&amp;show_axis_titles=yes&amp;show_tooltip=yes&amp;id=IHLIDXUSOH&amp;scale=left&amp;cosd=2021-08-28&amp;coed=2026-08-28&amp;line_color=%230073e6&amp;link_values=false&amp;line_style=solid&amp;mark_type=none&amp;mw=3&amp;lw=3&amp;ost=-99999&amp;oet=99999&amp;mma=0&amp;fml=a&amp;fq=Daily%2C%207-Day&amp;fam=avg&amp;fgst=lin&amp;fgsnd=2020-02-01&amp;line_index=1&amp;transformation=lin&amp;vintage_date=2026-09-02&amp;revision_date=2026-09-02&amp;nd=2020-02-01&quot;
+
+# https://fred.stlouisfed.org/graph/fredgraph.csv?id=IHLIDXUSOH
+
+fred_file &lt;- tempfile(fileext = &quot;.csv&quot;)
+
+download.file(
+  fred_url,
+  fred_file,
+  method = &quot;libcurl&quot;
+)
+
+oh_jobs &lt;- readr::read_csv(fred_file)</code></pre>
 <pre><code>## Rows: 1827 Columns: 2
 ## ── Column specification ────────────────────────────────────────────────────────
 ## Delimiter: &quot;,&quot;
@@ -1698,9 +1774,21 @@ for subsetting the vector</li>
 ## 
 ## ℹ Use `spec()` to retrieve the full column specification for this data.
 ## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<pre class="r"><code>oh_jobs_baser= read.csv(&quot;https://fred.stlouisfed.org/graph/fredgraph.csv?bgcolor=%23ebf3fb&amp;chart_type=line&amp;drp=0&amp;fo=open%20sans&amp;graph_bgcolor=%23ffffff&amp;height=450&amp;mode=fred&amp;recession_bars=on&amp;txtcolor=%23444444&amp;ts=12&amp;tts=12&amp;width=1140&amp;nt=0&amp;thu=0&amp;trc=0&amp;show_legend=yes&amp;show_axis_titles=yes&amp;show_tooltip=yes&amp;id=IHLIDXUSOH&amp;scale=left&amp;cosd=2021-08-28&amp;coed=2026-08-28&amp;line_color=%230073e6&amp;link_values=false&amp;line_style=solid&amp;mark_type=none&amp;mw=3&amp;lw=3&amp;ost=-99999&amp;oet=99999&amp;mma=0&amp;fml=a&amp;fq=Daily%2C%207-Day&amp;fam=avg&amp;fgst=lin&amp;fgsnd=2020-02-01&amp;line_index=1&amp;transformation=lin&amp;vintage_date=2026-09-02&amp;revision_date=2026-09-02&amp;nd=2020-02-01&quot;)
+
+dplyr::glimpse(oh_jobs)</code></pre>
+<pre><code>## Rows: 1,827
+## Columns: 2
+## $ observation_date &lt;date&gt; 2021-08-28, 2021-08-29, 2021-08-30, 2021-08-31, 2021…
+## $ IHLIDXUSOH       &lt;dbl&gt; 139.62, 139.74, 139.88, 139.97, 139.95, 140.03, 140.1…</code></pre>
+<pre class="r"><code>dplyr::glimpse(oh_jobs_baser)</code></pre>
+<pre><code>## Rows: 1,827
+## Columns: 2
+## $ observation_date &lt;chr&gt; &quot;2021-08-28&quot;, &quot;2021-08-29&quot;, &quot;2021-08-30&quot;, &quot;2021-08-31…
+## $ IHLIDXUSOH       &lt;dbl&gt; 139.62, 139.74, 139.88, 139.97, 139.95, 140.03, 140.1…</code></pre>
 </div>
 
-<div id="rmd-source-code">LS0tDQp0aXRsZTogIkNsYXNzIDA0Ig0KYXV0aG9yOiAiTGluZHNleSBDYXJvdGhlcnMiDQpkYXRlOiAiMjAyNi0wOS0wMiINCm91dHB1dDogDQogIGh0bWxfZG9jdW1lbnQ6DQogICAgdG9jOiB0cnVlDQogICAgdG9jX2Zsb2F0OiB0cnVlDQogICAgbnVtYmVyX3NlY3Rpb25zOiB0cnVlDQogICAgY29kZV9kb3dubG9hZDogdHJ1ZQ0KICAgIGNvZGVfZm9sZGluZzogc2hvdw0KLS0tDQoNCmBgYHtyIHNldHVwLCBpbmNsdWRlPUZBTFNFfQ0Ka25pdHI6Om9wdHNfY2h1bmskc2V0KGVjaG8gPSBGQUxTRSkNCmBgYA0KDQpgYGB7cn0NCmNyYXNoZXNfYnlfZGF5ID0gYygyMDIwLCAyMjQxLCAyMzI3LCAyMjg1LCAyMzgwLCAxODY2LCAxNjY0KQ0KbmFtZXMoY3Jhc2hlc19ieV9kYXkpID0gYygiTW9uIiwgIlR1ZSIsICJXZWQiLCAiVGh1IiwNCiAgICAgICAgICAgICAgICAgICAgICAgICAgIkZyaSIsICJTYXQiLCAiU3VuIikNCmBgYA0KDQojIEZyb20gVmVjdG9ycyB0byBhIERhdGEgRnJhbWUNCmBgYHtyfQ0KY3Jhc2hlc19kZiA9IHRpYmJsZTo6dGliYmxlKA0KICBkYXkgICAgID0gbmFtZXMoY3Jhc2hlc19ieV9kYXkpLA0KICBjcmFzaGVzID0gY3Jhc2hlc19ieV9kYXksDQogIGJ1c3kgICAgPSBjcmFzaGVzX2J5X2RheSA+IDIwMDANCikNCmNyYXNoZXNfZGYgDQpgYGANCg0KIyBMb29raW5nIGF0IGEgRGF0YSBGcmFtZQ0KYGBge3J9DQpucm93KGNyYXNoZXNfZGYpICAgICAgICAgICAgICMgaG93IG1hbnkgcm93cz8NCm5jb2woY3Jhc2hlc19kZikgICAgICAgICAgICAgIyBob3cgbWFueSBjb2x1bW5zPw0KY29sbmFtZXMoY3Jhc2hlc19kZikgICAgICAgICAjIHdoYXQgYXJlIHRoZXkgY2FsbGVkPw0KdHlwZW9mKGNyYXNoZXNfZGYpICAgICAgICAgICAjIHdoYXQgaXMgaXQgdW5kZXJuZWF0aD8NCg0KIyBnaXZlcyBhIGRhdGEgZnJhbWUgc3VtbWFyeSAobGlrZSBzdHIoKSBidXQgbmVhdGVyKQ0KZHBseXI6OmdsaW1wc2UoY3Jhc2hlc19kZikgIyBvbmUgbGltZSBwZXIgY29sdW1uDQpgYGANCg0KIyBBIExpc3QgSG9sZHMgQW55dGhpbmcNCmBgYHtyfQ0KZXhhbXBsZV9saXN0ID0gbGlzdCgNCiAgMTozLCAgICAgICAgICAgICAgICAgICAgIyBpbnRlZ2VycyAxLCAyLCAzDQogICJhIiwgICAgICAgICAgICAgICAgICAgICMgb25lIHBpZWNlIG9mIHRleHQNCiAgYyhUUlVFLCBGQUxTRSwgVFJVRSksICAgIyB0aHJlZSBsb2dpY2Fscw0KICBjKDIuMywgNS45KSAgICAgICAgICAgICAjIHR3byBkZWNpbWFscw0KKQ0Kc3RyKGV4YW1wbGVfbGlzdCkgICAgICAgICAjIHRoZSB4LXJheSB2aWV3DQpgYGANCg0KIyBbXSB2cyBbW11dIG9uIGEgTGlzdA0KYGBge3J9DQpzdHIoZXhhbXBsZV9saXN0WzFdKSAgICAgIyBbIF0gIHRoZSBzaGFrZXI6IGEgbGlzdCBvZiAxDQoNCnN0cihleGFtcGxlX2xpc3RbWzFdXSkgICAjIFtbIF1dIHRoZSBwYWNrZXQ6IHRoZSBlbGVtZW50DQoNCmV4YW1wbGVfbGlzdFtbMV1dW1sxXV0gICAjIHRoZSBwZXBwZXI6IGZpcnN0IHZhbHVlIGluIGl0DQoNCmV4YW1wbGVfbGlzdFtbNF1dWzJdICAgICAjIGVsZW1lbnQgNCwgdGhlbiBpdHMgMm5kIHZhbHVlDQpgYGANCg0KIyBFeGFtaW5lIGEgSm9iIEFkDQpgYGB7ciByb2JfYWR9DQpqb2IgPSBsaXN0KA0KICB0aXRsZSAgID0gIlJlc2VhcmNoIERhdGEgU2NpZW50aXN0LCBNYWdpYyBFeWUiLA0KICBjb21wYW55ID0gIkdvb2dsZSIsDQogIHNhbGFyeSAgPSBsaXN0KG1pbiA9IDE0NzAwMCwgbWF4ID0gMjEwMDAwKQ0KKQ0Kc3RyKGpvYikNCmBgYA0KDQoNCmBgYHtyfQ0KIyAxLiBUaGUgY29tcGFueSBuYW1lLg0KY29tcGFueV9uYW1lIDwtIGpvYiRjb21wYW55ICMgb3Igam9iW1syXV07IGpvYlsyXSB3b3VsZCByZXR1cm4gYSBsaXN0IA0KY29tcGFueV9uYW1lDQpjb21wYW55X25hbWVfYXNfbmFtZWRfbGlzdCA8LSBqb2JbMl0gIyB3ZSB0eXBpY2FsbHkgbm8gZG8gd2FudCB0aGlzDQoNCiMgMi4gVGhlIG1heGltdW0gc2FsYXJ5Lg0KbWF4X3NhbCA8LSBqb2Ikc2FsYXJ5JG1heA0KDQojIDMuIFRoZSBtYXhpbXVtIHNhbGFyeSBhZ2FpbiwgdXNpbmcgb25seSBbWyBdXS4NCmpvYltbM11dW1syXV0NCg0KIyA0LiBUaGUgbmFtZXMgb2YgdGhlIGVsZW1lbnRzIGluIGpvYi4NCm5hbWVzKGpvYikNCmBgYA0KDQojIFN1YnNldHRpbmcgDQotIEdldHRpbmcgYSBzdWJzZXQgb2YgYSB0aGUgb2JqZWN0J3MgZGF0YSBmb3IgYW5hbHlzaXMNCg0KIyMgVmVjdG9ycw0KLSBZb3UgY2FuIHN1YnNldCBieSBwb3NpdGlvbiA5aS5lLiwgYSBudW1iZXIpIG9yIGJ5IGEgbmFtZSBpZiBpdCBpcyBhIG5hbWVkIHZlY3RvcjsNCi0gWW91IGNhbiBhbHNvIHBhc3MgYSB2ZWN0b3IgKGUuZy4sIGxvZ2ljYWwgY29uZGl0aW9uLCAyOjQuIG9yIGMoKSkgZm9yIHN1YnNldHRpbmcgdGhlIHZlY3Rvcg0KDQpgYGB7ciB2ZWN0b3JzfQ0KY3Jhc2hlc19ieV9kYXlbMl0gICAgICAgICAgICAgICAgICAgICAgIyBvbmUgcG9zaXRpb24NCg0KY3Jhc2hlc19ieV9kYXlbIkZyaSJdICAgICAgICAgICAgICAgICAgIyBieSBuYW1lDQoNCmNyYXNoZXNfYnlfZGF5W2NyYXNoZXNfYnlfZGF5ID4gMjMwMF0gICMgYnkgY29uZGl0aW9uDQoNCmNyYXNoZXNfYnlfZGF5WzI6NF0gICAgICAgICAgICAgICAgICAgICMgeW91IGNhbiBnaXZlIGNvbnNlY3V0aXZlIG51bWJlcnMNCg0KY3Jhc2hlc19ieV9kYXlbYygnTW9uJywgJ0ZyaScpXSAgICAgICAgIyBjcmFzaGVzX2J5X2RheVtjKDEsNSldDQoNCmBgYA0KDQojIyBEYXRhIEZyYW1lcw0KYGBge3J9DQpjcmFzaGVzX2RmID0gdGliYmxlOjp0aWJibGUoDQogIGRheSAgICAgPSBuYW1lcyhjcmFzaGVzX2J5X2RheSksDQogIGNyYXNoZXMgPSBjcmFzaGVzX2J5X2RheSwNCiAgYnVzeSAgICA9IGNyYXNoZXNfYnlfZGF5ID4gMjAwMCkNCmNyYXNoZXNfZGYkY3Jhc2hlcyAgICAgICAgICAgICAgICAgICAgICMgb25lIGNvbHVtbiwgYXMgYSB2ZWN0b3INCg0KY3Jhc2hlc19kZltbImNyYXNoZXMiXV0gICAgICAgICAgICAgICAgIyB0aGUgc2FtZSB2ZWN0b3IsIGJ5IG5hbWUNCg0KY3Jhc2hlc19kZlsxOjIsIGMoImRheSIsICJjcmFzaGVzIildICAgIyByb3dzIDEgdG8gMiwgdHdvIGNvbHVtbnMNCiMgVGhlc2UgYm90aCByZXR1cm4gdGhlIHNhbWUNCiAgIyBjcmFzaGVzX2RmWzE6MiwgMToyXQ0KICAjIGNyYXNoZXNfZGZbMToyLCBjKDEsMildDQpgYGANCg0KIyBPaGlvIEpvYnMNCg0KYGBge3J9DQpvaF9qb2JzID0gcmVhZHI6OnJlYWRfY3N2KCBmaWxlID0gImh0dHBzOi8vZnJlZC5zdGxvdWlzZmVkLm9yZy9ncmFwaC9mcmVkZ3JhcGguY3N2P2JnY29sb3I9JTIzZWJmM2ZiJmNoYXJ0X3R5cGU9bGluZSZkcnA9MCZmbz1vcGVuJTIwc2FucyZncmFwaF9iZ2NvbG9yPSUyM2ZmZmZmZiZoZWlnaHQ9NDUwJm1vZGU9ZnJlZCZyZWNlc3Npb25fYmFycz1vbiZ0eHRjb2xvcj0lMjM0NDQ0NDQmdHM9MTImdHRzPTEyJndpZHRoPTg2NyZudD0wJnRodT0wJnRyYz0wJnNob3dfbGVnZW5kPXllcyZzaG93X2F4aXNfdGl0bGVzPXllcyZzaG93X3Rvb2x0aXA9eWVzJmlkPUlITElEWFVTT0gmc2NhbGU9bGVmdCZjb3NkPTIwMjEtMDgtMjgmY29lZD0yMDI2LTA4LTI4JmxpbmVfY29sb3I9JTIzMDA3M2U2JmxpbmtfdmFsdWVzPWZhbHNlJmxpbmVfc3R5bGU9c29saWQmbWFya190eXBlPW5vbmUmbXc9MyZsdz0zJm9zdD0tOTk5OTkmb2V0PTk5OTk5Jm1tYT0wJmZtbD1hJmZxPURhaWx5JTJDJTIwNy1EYXkmZmFtPWF2ZyZmZ3N0PWxpbiZmZ3NuZD0yMDIwLTAyLTAxJmxpbmVfaW5kZXg9MSZ0cmFuc2Zvcm1hdGlvbj1saW4mdmludGFnZV9kYXRlPTIwMjYtMDktMDImcmV2aXNpb25fZGF0ZT0yMDI2LTA5LTAyJm5kPTIwMjAtMDItMDEiDQopDQoNCm9oX2pvYl9iYXNlX3IgPSByZWFkLmNzdiggZmlsZSA9ICJodHRwczovL2ZyZWQuc3Rsb3Vpc2ZlZC5vcmcvZ3JhcGgvZnJlZGdyYXBoLmNzdj9iZ2NvbG9yPSUyM2ViZjNmYiZjaGFydF90eXBlPWxpbmUmZHJwPTAmZm89b3BlbiUyMHNhbnMmZ3JhcGhfYmdjb2xvcj0lMjNmZmZmZmYmaGVpZ2h0PTQ1MCZtb2RlPWZyZWQmcmVjZXNzaW9uX2JhcnM9b24mdHh0Y29sb3I9JTIzNDQ0NDQ0JnRzPTEyJnR0cz0xMiZ3aWR0aD04NjcmbnQ9MCZ0aHU9MCZ0cmM9MCZzaG93X2xlZ2VuZD15ZXMmc2hvd19heGlzX3RpdGxlcz15ZXMmc2hvd190b29sdGlwPXllcyZpZD1JSExJRFhVU09IJnNjYWxlPWxlZnQmY29zZD0yMDIxLTA4LTI4JmNvZWQ9MjAyNi0wOC0yOCZsaW5lX2NvbG9yPSUyMzAwNzNlNiZsaW5rX3ZhbHVlcz1mYWxzZSZsaW5lX3N0eWxlPXNvbGlkJm1hcmtfdHlwZT1ub25lJm13PTMmbHc9MyZvc3Q9LTk5OTk5Jm9ldD05OTk5OSZtbWE9MCZmbWw9YSZmcT1EYWlseSUyQyUyMDctRGF5JmZhbT1hdmcmZmdzdD1saW4mZmdzbmQ9MjAyMC0wMi0wMSZsaW5lX2luZGV4PTEmdHJhbnNmb3JtYXRpb249bGluJnZpbnRhZ2VfZGF0ZT0yMDI2LTA5LTAyJnJldmlzaW9uX2RhdGU9MjAyNi0wOS0wMiZuZD0yMDIwLTAyLTAxIikNCmBgYA0K</div>
+<div id="rmd-source-code">LS0tCnRpdGxlOiAiQ2xhc3MgMDQiCmF1dGhvcjogIkxpbmRzZXkgQ2Fyb3RoZXJzIgpkYXRlOiAiMjAyNi0wOS0wMiIKb3V0cHV0OiAKICBodG1sX2RvY3VtZW50OgogICAgdG9jOiB0cnVlCiAgICB0b2NfZmxvYXQ6IHRydWUKICAgIG51bWJlcl9zZWN0aW9uczogdHJ1ZQogICAgY29kZV9kb3dubG9hZDogdHJ1ZQogICAgY29kZV9mb2xkaW5nOiBzaG93Ci0tLQoKYGBge3Igc2V0dXAsIGluY2x1ZGU9RkFMU0V9CmtuaXRyOjpvcHRzX2NodW5rJHNldChlY2hvID0gVFJVRSkKYGBgCgoKYGBge3J9CmNyYXNoZXNfYnlfZGF5ID0gYygyMDIwLCAyMjQxLCAyMzI3LCAyMjg1LCAyMzgwLCAxODY2LCAxNjY0KQpuYW1lcyhjcmFzaGVzX2J5X2RheSkgPSBjKCJNb24iLCAiVHVlIiwgIldlZCIsICJUaHUiLAogICAgICAgICAgICAgICAgICAgICAgICAgICJGcmkiLCAiU2F0IiwgIlN1biIpCmBgYAoKIyBGcm9tIFZlY3RvcnMgdG8gYSBEYXRhIEZyYW1lCmBgYHtyfQpjcmFzaGVzX2RmID0gdGliYmxlOjp0aWJibGUoCiAgZGF5ICAgICA9IG5hbWVzKGNyYXNoZXNfYnlfZGF5KSwKICBjcmFzaGVzID0gY3Jhc2hlc19ieV9kYXksCiAgYnVzeSAgICA9IGNyYXNoZXNfYnlfZGF5ID4gMjAwMAopCmNyYXNoZXNfZGYgCmBgYAoKIyBMb29raW5nIGF0IGEgRGF0YSBGcmFtZQpgYGB7cn0KbnJvdyhjcmFzaGVzX2RmKSAgICAgICAgICAgICAjIGhvdyBtYW55IHJvd3M/Cm5jb2woY3Jhc2hlc19kZikgICAgICAgICAgICAgIyBob3cgbWFueSBjb2x1bW5zPwpjb2xuYW1lcyhjcmFzaGVzX2RmKSAgICAgICAgICMgd2hhdCBhcmUgdGhleSBjYWxsZWQ/CnR5cGVvZihjcmFzaGVzX2RmKSAgICAgICAgICAgIyB3aGF0IGlzIGl0IHVuZGVybmVhdGg/CgojIGdpdmVzIGEgZGF0YSBmcmFtZSBzdW1tYXJ5IChsaWtlIHN0cigpIGJ1dCBuZWF0ZXIpCmRwbHlyOjpnbGltcHNlKGNyYXNoZXNfZGYpICMgb25lIGxpbWUgcGVyIGNvbHVtbgpgYGAKCiMgQSBMaXN0IEhvbGRzIEFueXRoaW5nCmBgYHtyfQpleGFtcGxlX2xpc3QgPSBsaXN0KAogIDE6MywgICAgICAgICAgICAgICAgICAgICMgaW50ZWdlcnMgMSwgMiwgMwogICJhIiwgICAgICAgICAgICAgICAgICAgICMgb25lIHBpZWNlIG9mIHRleHQKICBjKFRSVUUsIEZBTFNFLCBUUlVFKSwgICAjIHRocmVlIGxvZ2ljYWxzCiAgYygyLjMsIDUuOSkgICAgICAgICAgICAgIyB0d28gZGVjaW1hbHMKKQpzdHIoZXhhbXBsZV9saXN0KSAgICAgICAgICMgdGhlIHgtcmF5IHZpZXcKYGBgCgojIFtdIHZzIFtbXV0gb24gYSBMaXN0CmBgYHtyfQpzdHIoZXhhbXBsZV9saXN0WzFdKSAgICAgIyBbIF0gIHRoZSBzaGFrZXI6IGEgbGlzdCBvZiAxCgpzdHIoZXhhbXBsZV9saXN0W1sxXV0pICAgIyBbWyBdXSB0aGUgcGFja2V0OiB0aGUgZWxlbWVudAoKZXhhbXBsZV9saXN0W1sxXV1bWzFdXSAgICMgdGhlIHBlcHBlcjogZmlyc3QgdmFsdWUgaW4gaXQKCmV4YW1wbGVfbGlzdFtbNF1dWzJdICAgICAjIGVsZW1lbnQgNCwgdGhlbiBpdHMgMm5kIHZhbHVlCmBgYAoKIyBFeGFtaW5lIGEgSm9iIEFkCmBgYHtyIHJvYl9hZH0Kam9iID0gbGlzdCgKICB0aXRsZSAgID0gIlJlc2VhcmNoIERhdGEgU2NpZW50aXN0LCBNYWdpYyBFeWUiLAogIGNvbXBhbnkgPSAiR29vZ2xlIiwKICBzYWxhcnkgID0gbGlzdChtaW4gPSAxNDcwMDAsIG1heCA9IDIxMDAwMCkKKQpzdHIoam9iKQpgYGAKCgpgYGB7cn0KIyAxLiBUaGUgY29tcGFueSBuYW1lLgpjb21wYW55X25hbWUgPC0gam9iJGNvbXBhbnkgIyBvciBqb2JbWzJdXTsgam9iWzJdIHdvdWxkIHJldHVybiBhIGxpc3QgCmNvbXBhbnlfbmFtZQpjb21wYW55X25hbWVfYXNfbmFtZWRfbGlzdCA8LSBqb2JbMl0gIyB3ZSB0eXBpY2FsbHkgbm8gZG8gd2FudCB0aGlzCgojIDIuIFRoZSBtYXhpbXVtIHNhbGFyeS4KbWF4X3NhbCA8LSBqb2Ikc2FsYXJ5JG1heAoKIyAzLiBUaGUgbWF4aW11bSBzYWxhcnkgYWdhaW4sIHVzaW5nIG9ubHkgW1sgXV0uCmpvYltbM11dW1syXV0KCiMgNC4gVGhlIG5hbWVzIG9mIHRoZSBlbGVtZW50cyBpbiBqb2IuCm5hbWVzKGpvYikKYGBgCgojIFN1YnNldHRpbmcgCi0gR2V0dGluZyBhIHN1YnNldCBvZiBhIHRoZSBvYmplY3QncyBkYXRhIGZvciBhbmFseXNpcwoKIyMgVmVjdG9ycwotIFlvdSBjYW4gc3Vic2V0IGJ5IHBvc2l0aW9uIDlpLmUuLCBhIG51bWJlcikgb3IgYnkgYSBuYW1lIGlmIGl0IGlzIGEgbmFtZWQgdmVjdG9yOwotIFlvdSBjYW4gYWxzbyBwYXNzIGEgdmVjdG9yIChlLmcuLCBsb2dpY2FsIGNvbmRpdGlvbiwgMjo0LiBvciBjKCkpIGZvciBzdWJzZXR0aW5nIHRoZSB2ZWN0b3IKCmBgYHtyIHZlY3RvcnN9CmNyYXNoZXNfYnlfZGF5WzJdICAgICAgICAgICAgICAgICAgICAgICMgb25lIHBvc2l0aW9uCgpjcmFzaGVzX2J5X2RheVsiRnJpIl0gICAgICAgICAgICAgICAgICAjIGJ5IG5hbWUKCmNyYXNoZXNfYnlfZGF5W2NyYXNoZXNfYnlfZGF5ID4gMjMwMF0gICMgYnkgY29uZGl0aW9uCgpjcmFzaGVzX2J5X2RheVsyOjRdICAgICAgICAgICAgICAgICAgICAjIHlvdSBjYW4gZ2l2ZSBjb25zZWN1dGl2ZSBudW1iZXJzCgpjcmFzaGVzX2J5X2RheVtjKCdNb24nLCAnRnJpJyldICAgICAgICAjIGNyYXNoZXNfYnlfZGF5W2MoMSw1KV0KCmBgYAoKIyMgRGF0YSBGcmFtZXMKYGBge3J9CmNyYXNoZXNfZGYgPSB0aWJibGU6OnRpYmJsZSgKICBkYXkgICAgID0gbmFtZXMoY3Jhc2hlc19ieV9kYXkpLAogIGNyYXNoZXMgPSBjcmFzaGVzX2J5X2RheSwKICBidXN5ICAgID0gY3Jhc2hlc19ieV9kYXkgPiAyMDAwKQpjcmFzaGVzX2RmJGNyYXNoZXMgICAgICAgICAgICAgICAgICAgICAjIG9uZSBjb2x1bW4sIGFzIGEgdmVjdG9yCgpjcmFzaGVzX2RmW1siY3Jhc2hlcyJdXSAgICAgICAgICAgICAgICAjIHRoZSBzYW1lIHZlY3RvciwgYnkgbmFtZQoKY3Jhc2hlc19kZlsxOjIsIGMoImRheSIsICJjcmFzaGVzIildICAgIyByb3dzIDEgdG8gMiwgdHdvIGNvbHVtbnMKIyBUaGVzZSBib3RoIHJldHVybiB0aGUgc2FtZQogICMgY3Jhc2hlc19kZlsxOjIsIDE6Ml0KICAjIGNyYXNoZXNfZGZbMToyLCBjKDEsMildCmBgYAoKIyBPaGlvIEpvYnMKCmBgYHtyIG9oaW9fam9ic30KIyBvaF9qb2JzID0gcmVhZHI6OnJlYWRfY3N2KAojICAgZmlsZT0iaHR0cHM6Ly9mcmVkLnN0bG91aXNmZWQub3JnL2dyYXBoL2ZyZWRncmFwaC5jc3Y/Ymdjb2xvcj0lMjNlYmYzZmImY2hhcnRfdHlwZT1saW5lJmRycD0wJmZvPW9wZW4lMjBzYW5zJmdyYXBoX2JnY29sb3I9JTIzZmZmZmZmJmhlaWdodD00NTAmbW9kZT1mcmVkJnJlY2Vzc2lvbl9iYXJzPW9uJnR4dGNvbG9yPSUyMzQ0NDQ0NCZ0cz0xMiZ0dHM9MTImd2lkdGg9MTE0MCZudD0wJnRodT0wJnRyYz0wJnNob3dfbGVnZW5kPXllcyZzaG93X2F4aXNfdGl0bGVzPXllcyZzaG93X3Rvb2x0aXA9eWVzJmlkPUlITElEWFVTT0gmc2NhbGU9bGVmdCZjb3NkPTIwMjEtMDgtMjgmY29lZD0yMDI2LTA4LTI4JmxpbmVfY29sb3I9JTIzMDA3M2U2JmxpbmtfdmFsdWVzPWZhbHNlJmxpbmVfc3R5bGU9c29saWQmbWFya190eXBlPW5vbmUmbXc9MyZsdz0zJm9zdD0tOTk5OTkmb2V0PTk5OTk5Jm1tYT0wJmZtbD1hJmZxPURhaWx5JTJDJTIwNy1EYXkmZmFtPWF2ZyZmZ3N0PWxpbiZmZ3NuZD0yMDIwLTAyLTAxJmxpbmVfaW5kZXg9MSZ0cmFuc2Zvcm1hdGlvbj1saW4mdmludGFnZV9kYXRlPTIwMjYtMDktMDImcmV2aXNpb25fZGF0ZT0yMDI2LTA5LTAyJm5kPTIwMjAtMDItMDEiCiMgKQoKZnJlZF91cmwgPC0gImh0dHBzOi8vZnJlZC5zdGxvdWlzZmVkLm9yZy9ncmFwaC9mcmVkZ3JhcGguY3N2P2JnY29sb3I9JTIzZWJmM2ZiJmNoYXJ0X3R5cGU9bGluZSZkcnA9MCZmbz1vcGVuJTIwc2FucyZncmFwaF9iZ2NvbG9yPSUyM2ZmZmZmZiZoZWlnaHQ9NDUwJm1vZGU9ZnJlZCZyZWNlc3Npb25fYmFycz1vbiZ0eHRjb2xvcj0lMjM0NDQ0NDQmdHM9MTImdHRzPTEyJndpZHRoPTExNDAmbnQ9MCZ0aHU9MCZ0cmM9MCZzaG93X2xlZ2VuZD15ZXMmc2hvd19heGlzX3RpdGxlcz15ZXMmc2hvd190b29sdGlwPXllcyZpZD1JSExJRFhVU09IJnNjYWxlPWxlZnQmY29zZD0yMDIxLTA4LTI4JmNvZWQ9MjAyNi0wOC0yOCZsaW5lX2NvbG9yPSUyMzAwNzNlNiZsaW5rX3ZhbHVlcz1mYWxzZSZsaW5lX3N0eWxlPXNvbGlkJm1hcmtfdHlwZT1ub25lJm13PTMmbHc9MyZvc3Q9LTk5OTk5Jm9ldD05OTk5OSZtbWE9MCZmbWw9YSZmcT1EYWlseSUyQyUyMDctRGF5JmZhbT1hdmcmZmdzdD1saW4mZmdzbmQ9MjAyMC0wMi0wMSZsaW5lX2luZGV4PTEmdHJhbnNmb3JtYXRpb249bGluJnZpbnRhZ2VfZGF0ZT0yMDI2LTA5LTAyJnJldmlzaW9uX2RhdGU9MjAyNi0wOS0wMiZuZD0yMDIwLTAyLTAxIgoKIyBodHRwczovL2ZyZWQuc3Rsb3Vpc2ZlZC5vcmcvZ3JhcGgvZnJlZGdyYXBoLmNzdj9pZD1JSExJRFhVU09ICgpmcmVkX2ZpbGUgPC0gdGVtcGZpbGUoZmlsZWV4dCA9ICIuY3N2IikKCmRvd25sb2FkLmZpbGUoCiAgZnJlZF91cmwsCiAgZnJlZF9maWxlLAogIG1ldGhvZCA9ICJsaWJjdXJsIgopCgpvaF9qb2JzIDwtIHJlYWRyOjpyZWFkX2NzdihmcmVkX2ZpbGUpCgoKb2hfam9ic19iYXNlcj0gcmVhZC5jc3YoImh0dHBzOi8vZnJlZC5zdGxvdWlzZmVkLm9yZy9ncmFwaC9mcmVkZ3JhcGguY3N2P2JnY29sb3I9JTIzZWJmM2ZiJmNoYXJ0X3R5cGU9bGluZSZkcnA9MCZmbz1vcGVuJTIwc2FucyZncmFwaF9iZ2NvbG9yPSUyM2ZmZmZmZiZoZWlnaHQ9NDUwJm1vZGU9ZnJlZCZyZWNlc3Npb25fYmFycz1vbiZ0eHRjb2xvcj0lMjM0NDQ0NDQmdHM9MTImdHRzPTEyJndpZHRoPTExNDAmbnQ9MCZ0aHU9MCZ0cmM9MCZzaG93X2xlZ2VuZD15ZXMmc2hvd19heGlzX3RpdGxlcz15ZXMmc2hvd190b29sdGlwPXllcyZpZD1JSExJRFhVU09IJnNjYWxlPWxlZnQmY29zZD0yMDIxLTA4LTI4JmNvZWQ9MjAyNi0wOC0yOCZsaW5lX2NvbG9yPSUyMzAwNzNlNiZsaW5rX3ZhbHVlcz1mYWxzZSZsaW5lX3N0eWxlPXNvbGlkJm1hcmtfdHlwZT1ub25lJm13PTMmbHc9MyZvc3Q9LTk5OTk5Jm9ldD05OTk5OSZtbWE9MCZmbWw9YSZmcT1EYWlseSUyQyUyMDctRGF5JmZhbT1hdmcmZmdzdD1saW4mZmdzbmQ9MjAyMC0wMi0wMSZsaW5lX2luZGV4PTEmdHJhbnNmb3JtYXRpb249bGluJnZpbnRhZ2VfZGF0ZT0yMDI2LTA5LTAyJnJldmlzaW9uX2RhdGU9MjAyNi0wOS0wMiZuZD0yMDIwLTAyLTAxIikKCmRwbHlyOjpnbGltcHNlKG9oX2pvYnMpCmRwbHlyOjpnbGltcHNlKG9oX2pvYnNfYmFzZXIpCmBgYA==</div>
 
 
 </div>
