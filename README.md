@@ -6,11 +6,8 @@ Phase I: Data Acquisition & Transformation (Weeks 1-8)
 Phase II: Data Visualization & Communication (Weeks 8-13)
 Phase III: Exploratory Data Mining (Weeks 13-14)
 
-<<<<<<< HEAD
-
 
 =======
 # Skills
 - Git
 - R
->>>>>>> b7225dce3b8fe0fd3ad9e6335d1fb74e3332001a
