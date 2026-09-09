@@ -90,13 +90,11 @@ logins = readr::read_csv("../data/stage1.csv")
 log = jsonlite::fromJSON("https://isa401-import-heist.vercel.app/api/stage2?key=smithj31&seat=L1-6&s=B")
 
 events_df <- log$events # 6 files downloaded
-jsonlite::fromJSON("https://isa401-import-heist.vercel.app/api/finish?code=6")
-
 ```
 
 ## Close the ticket
 ```{r}
-jsonlite::fromJSON("https://isa401-import-heist.vercel.app/api/finish?code=NUMBER&seat=L1-6&s=B")
+jsonlite::fromJSON("https://isa401-import-heist.vercel.app/api/finish?code=6&seat=L1-6&s=B")
 ```
 
 
