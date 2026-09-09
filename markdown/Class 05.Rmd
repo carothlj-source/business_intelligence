@@ -1,0 +1,112 @@
+---
+title: "Class 05"
+author: "Lindsey Carothers"
+date: "2026-09-09"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    code_download: true
+    code_folding: show
+    theme: simplex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+campus = jsonlite::fromJSON(
+  "https://isa401-find-your-seat.vercel.app/campus.json")
+```
+
+# Game 1- Find your seat
+
+## Level 1- The business school
+```{r game level 1}
+names(campus) # shows the named elements within a list or vector or the cols in a data frame
+
+# equivalent campus[['Farmer']] (by name) or campus[[5]] (by position)
+fsb <- campus$Farmer
+
+fsb$code
+```
+
+## Level 2- The floor
+```{r game level 2}
+ourfloor <- fsb[[8]][[3]] 
+# or fsb$floors or fsb[[8]]$'2'
+
+ourfloor$sections
+```
+
+## Level 3- The room
+```{r game level 3}
+(sec_floor_rooms <- ourfloor[[3]])
+```
+
+# Reading the Excel file
+```{r reading in occupations}
+library(readxl)
+occupation <- readxl::read_excel(
+  path = "../data/occupation.xlsx",
+  sheet = 5, # sheet = "Table 1.4"
+  skip = 1
+)
+```
+
+## Updating Occupations
+```{r updating occupations}
+# stopping before the footnotes
+
+# '-' when you subset in R drops these specific things 
+# given that they are multiple, I put them in a vector
+# notice the "," after the parenthesis 
+# nothing after the comma which means all columns
+# instead of that space --> 1:7
+occupation <- occupation[-c(32,33,34), ]
+
+# or
+# occupation <- occupation[(1:31), ]
+```
+
+# Read JSON data
+```{r read json}
+json_url = "https://data.cincinnati-oh.gov/resource/rvmt-pkmq.json?$limit=100"
+
+crashes_json = jsonlite::fromJSON(json_url)
+dplyr::glimpse(crashes_json)
+```
+
+# Game 2- Data Import for Cybersecurity Game
+
+## Identify the compromised account
+```{r read csv}
+logins = readr::read_csv("../data/stage1.csv")
+```
+
+## Scope the damage
+```{r}
+log = jsonlite::fromJSON("https://isa401-import-heist.vercel.app/api/stage2?key=smithj31&seat=L1-6&s=B")
+
+events_df <- log$events # 6 files downloaded
+jsonlite::fromJSON("https://isa401-import-heist.vercel.app/api/finish?code=6")
+
+```
+
+## Close the ticket
+```{r}
+jsonlite::fromJSON("https://isa401-import-heist.vercel.app/api/finish?code=NUMBER&seat=L1-6&s=B")
+```
+
+
+
+
+
+
+
+
+
+
+
+
