@@ -1,0 +1,71 @@
+---
+title: "Assignment 04: Subsetting and Import"
+author: "Lindsey Carothers"
+date: "2026-09-13"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Section A
+
+## Download midwest_airbnb.dbLinks to an external site. and save it in the data/ folder of your isa401 project (next to markdowns/).
+In a code chunk of markdowns/hw04.Rmd (or any Rmd inside markdowns/), run:
+```{r}
+con = DBI::dbConnect(RSQLite::SQLite(), "../data/midwest_airbnb.db")
+listings = DBI::dbReadTable(con, "listings")
+nrow(listings)
+```
+Every question in this section is about the listings data frame those two lines create: Inside Airbnb listings from Chicago, Columbus, and the Twin Cities (July 2026 snapshots). Answer with what R prints; do not round or rephrase.
+
+**14887**
+
+## How many of the listings are in Columbus? The city column is "Chicago", "Columbus", or "Twin Cities". 
+```{r}
+sum(listings$city == "Columbus")
+```
+
+## Which of these is the name of the most expensive listing in Chicago (highest price, in US dollars per night)? All four are real Chicago listings from the data.
+```{r}
+chicago <- subset(listings, city == "Chicago")
+chicago[which.max(chicago$price), c("name", "price")]
+```
+
+## How many distinct values does the neighbourhood column contain among the Chicago listings? 
+```{r}
+length(unique(listings$neighbourhood[listings$city == "Chicago"]))
+```
+
+## How many listings are run by a superhost? The host_is_superhost column is "t" for a superhost, "f" otherwise, and NA for a few hosts, so tell sum() to skip the NAs. 
+```{r}
+sum(listings$host_is_superhost == "t", na.rm = TRUE)
+```
+
+## How many listings cost more than $1,000 per night? The price column is numeric, in US dollars per night.
+```{r}
+sum(listings$price > 1000, na.rm = TRUE)
+```
+
+# Section B
+
+## Which statement is correct about reading a CSV file from a URL and from a file on disk?
+
+readr::read_csv() works for both: pass a URL or a file path as the same first argument
+
+## In class, the BLS occupation workbook had to be downloaded in a browser before R could read it. Why?
+
+read_excel() reads only files on disk, and the BLS site blocks scripted downloads
+
+## Your project has the folders markdowns/ and data/ side by side. When you knit markdowns/class05.Rmd, which path reaches data/occupation.xlsx?
+
+../data/occupation.xlsx
+
+## What does DBI::dbReadTable(con, "listings") return?
+
+A data frame with one row per record in the table
+```{r}
+DBI::dbReadTable(con, "listings")
+```
+
