@@ -1,0 +1,132 @@
+---
+title: "Class 07"
+author: "Lindsey Carothers"
+date: "2026-09-16"
+output: 
+html_document:
+  toc: true
+  toc_float: true
+  number_sections: true
+  code_folding: show
+  code_download: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Data Wrangling with dplyr
+```{r, include=FALSE}
+con = DBI::dbConnect(RSQLite::SQLite(), "../data/scout.db")
+postings = DBI::dbReadTable(con, "scout_postings") |> tibble::as_tibble()
+DBI::dbDisconnect(con)
+
+jobs = postings |>
+  dplyr::select(company, title, location_state, remote, category, posted_at, last_seen_at) |>
+  dplyr::mutate(dplyr::across(dplyr::ends_with("_at"), as.Date),
+                days_open = as.numeric(last_seen_at - posted_at))
+
+jobs
+```
+
+## From SQL to dplyr
+
+**Monday, Part 1: SQL, typed by you**
+DBI::dbGetQuery(con, "
+  SELECT company, COUNT(*) AS n
+  FROM scout_postings
+  WHERE remote = 1
+  GROUP BY company
+  ORDER BY n DESC
+  LIMIT 10")
+  
+```{r}
+# Today: dplyr, on the data frame from dbReadTable()
+postings |>
+  dplyr::filter(remote == 1) |>
+  dplyr::count(company, sort = TRUE) |>
+  head(10)
+```
+
+## The dplyr Verbs
+
+dplyr::select(company, title, remote) #select
+
+dplyr::filter(remote == 1, location_state == "OH") # where
+
+dplyr::arrange(dplyr::desc(posted_at)) # order by
+
+dplyr::mutate(days_open = last_seen - posted) # select ... as
+
+dplyr::group_by(company) |> dplyr::summarize(n = dplyr::n()) # group by
+
+dplyr::left_join(states, by = "location_state") # join
+
+
+## A dplyr Pipeline, step by step
+```{r}
+jobs |>
+  dplyr::select(company, location_state, remote, posted_at, last_seen_at) |>
+  dplyr::filter(remote == 1) |>
+  dplyr::mutate(days_open = as.numeric(as.Date(last_seen_at) - as.Date(posted_at))) |>
+  dplyr::arrange(dplyr::desc(days_open)) |>
+  dplyr::group_by(company) |>
+  dplyr::summarize(n = dplyr::n(), avg_days = mean(days_open))
+```
+
+## select(): Choosing Columns
+```{r}
+con = DBI::dbConnect(RSQLite::SQLite(), "../data/scout.db")
+postings = DBI::dbReadTable(con, "scout_postings") |> tibble::as_tibble()
+DBI::dbDisconnect(con)
+
+jobs = postings |>
+  dplyr::select(company, title, location_state, remote, category, posted_at, last_seen_at)
+jobs
+```
+
+## filter (): Choosing Rows
+```{r}
+c(one_test = jobs |> dplyr::filter(remote == 1) |> nrow(),
+  both     = jobs |> dplyr::filter(remote == 1, location_state == "OH") |> nrow(),
+  either   = jobs |> dplyr::filter(remote == 1 | category == "internship") |> nrow(),
+  in_set   = jobs |> dplyr::filter(location_state %in% c("OH", "IN", "KY")) |> nrow())
+```
+
+## mutate() and arrange()
+```{r}
+jobs = jobs |>
+  dplyr::mutate(days_open = as.numeric(as.Date(last_seen_at) - as.Date(posted_at)))
+
+jobs |> dplyr::arrange(dplyr::desc(days_open)) |> dplyr::select(company, title, days_open)
+```
+
+## Selection Helpers and across()
+```{r}
+jobs = jobs |> dplyr::mutate(dplyr::across(dplyr::ends_with("_at"), as.Date))    # both dates at once
+jobs |> dplyr::summarize(dplyr::across(dplyr::where(is.numeric), mean))
+```
+
+## group_by() and summarize()
+```{r}
+jobs |>
+  dplyr::group_by(location_state) |>
+  dplyr::summarize(postings = dplyr::n(), remote_share = mean(remote)) |>
+  dplyr::arrange(dplyr::desc(postings))
+```
+
+# Demo
+
+## Q1 -- which cat is remote friendly
+To answer that, the logic would be as follows 
+- Find the number of jobs per category
+- Normalize the number of remote jobs by dividing by the total jobs
+```{r}
+jobs |> 
+  # I want to move from unit of analysis being a job posting to category
+  dplyr::group_by(category) |> 
+  dplyr::summarise(
+    postings = dplyr::n(),
+    remote_share = mean(remote)
+)
+```
