@@ -117,11 +117,17 @@ jobs |>
 
 # Demo
 
-## Q1 -- which cat is remote friendly
-To answer that, the logic would be as follows 
-- Find the number of jobs per category
-- Normalize the number of remote jobs by dividing by the total jobs
+Which postings are remote, and does it depend on the job category, the state, or the kind of role? Typed live; you say the verb before I type it.
+ 
+ 
+## Q1 -- Which category is remote friendly
+
+One verb pair. The federal postings come from USAJobs and are on site by policy; internships almost never; so the remote question is a full-time question.
+
 ```{r}
+# Find the number of jobs per category
+# Normalize the number of remote jobs by dividing by the total jobs
+
 jobs |> 
   # I want to move from unit of analysis being a job posting to category
   dplyr::group_by(category) |> 
@@ -130,3 +136,111 @@ jobs |>
     remote_share = mean(remote)
 )
 ```
+
+## Q2 -- Among full-time postings, which states have the highest remote share?
+
+Keep one category, collapse to one row per state, keep the states with enough postings to trust a share, sort. Four verbs, one chain; each one answers a "but" from the room.
+
+```{r}
+jobs |> 
+  dplyr::group_by(category, location_state) |> 
+  dplyr::summarise(
+    postings = dplyr::n(),
+    remote_share = mean(remote) |> round(digits=2)
+  ) |> 
+  dplyr::arrange(dplyr::desc(remote_share)) |> 
+  na.omit() # to drop the location_state = NA 
+
+# Alternative way
+jobs |> 
+  dplyr:: filter(category == 'fulltime') |> 
+  dplyr::group_by(location_state) |> 
+  dplyr::summarise(
+    postings = dplyr::n(),
+    remote_share = mean(remote) |> round(digits=2)
+  ) |> 
+  dplyr::arrange(dplyr::desc(remote_share)) |> 
+  na.omit() # to drop the location_state = NA 
+```
+
+## Q3 -- Does the kind of role matter?
+
+The title column is free text, so the first step is a new column that reads it: dplyr::case_when() turns a set of tests into labels, in order, first match wins. Then the same pair of verbs as tab 1, plus how long each role stays posted.
+
+```{r}
+
+```
+
+# Joins
+```{r}
+states = tibble::tibble(location_state = state.abb,
+                        state_name = state.name,
+                        region = as.character(state.region))
+
+jobs |>
+  dplyr::left_join(states, by = "location_state") |>
+  dplyr::group_by(region) |>
+  dplyr::summarize(postings = dplyr::n(), remote_share = mean(remote)) |>
+  dplyr::arrange(dplyr::desc(postings))
+```
+
+## Anti-joins
+```{r}
+jobs |> dplyr::count(location_state) |> dplyr::anti_join(states, by = "location_state")
+```
+
+# Airbnb listings
+
+```{r}
+con = DBI::dbConnect(RSQLite::SQLite(), "../data/midwest_airbnb.db")
+listings = DBI::dbReadTable(con, "listings") |>
+  tibble::as_tibble()
+DBI::dbDisconnect(con)
+```
+1. How many listings per city?
+```{r}
+listings |>  
+  dplyr::group_by(city) |> 
+  dplyr::summarise(count = dplyr::n())
+
+# short cut using count
+listings |> 
+  dplyr::count(city)
+
+# alternatively, you can count the number of times each city occurred in the city column
+table(listings$city) # returns named vector
+```
+
+2. For entire homes (room_type == "Entire home/apt") that sleep four or more, what is the median price in each city?
+```{r}
+listings |> 
+  dplyr::filter(room_type == "Entire home/apt" & accommodates >= 4) |> 
+  dplyr::group_by(city) |> 
+  dplyr::summarise(median_price = median(price))
+```
+
+3. Add price_per_person = price / accommodates. Which three listings are cheapest per person? Believe them?
+```{r}
+listings |> 
+  dplyr::mutate(price_per_person = price / accommodates) |> 
+  dplyr::select(city, host_name, name, price, accommodates, price_per_person) |> 
+  dplyr::arrange(price_per_person) |> 
+  head(3)
+```
+
+4. Which five host_names have the most listings?
+```{r}
+# host names are not unique, host_ids are
+
+listings |> 
+  dplyr::count(host_name, sort = T)
+
+# this code finds unique hosts through host_id
+listings |> 
+  dplyr::count(host_name, host_id, sort = T)
+```
+
+
+
+
+

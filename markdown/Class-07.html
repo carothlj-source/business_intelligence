@@ -504,12 +504,18 @@ jobs |&gt; dplyr::summarize(dplyr::across(dplyr::where(is.numeric), mean))</code
 </div>
 <div id="demo" class="section level1">
 <h1>Demo</h1>
-<div id="q1-which-cat-is-remote-friendly" class="section level2">
-<h2>Q1 – which cat is remote friendly</h2>
-<p>To answer that, the logic would be as follows - Find the number of
-jobs per category - Normalize the number of remote jobs by dividing by
-the total jobs</p>
-<pre class="r"><code>jobs |&gt; 
+<p>Which postings are remote, and does it depend on the job category,
+the state, or the kind of role? Typed live; you say the verb before I
+type it.</p>
+<div id="q1-which-category-is-remote-friendly" class="section level2">
+<h2>Q1 – Which category is remote friendly</h2>
+<p>One verb pair. The federal postings come from USAJobs and are on site
+by policy; internships almost never; so the remote question is a
+full-time question.</p>
+<pre class="r"><code># Find the number of jobs per category
+# Normalize the number of remote jobs by dividing by the total jobs
+
+jobs |&gt; 
   # I want to move from unit of analysis being a job posting to category
   dplyr::group_by(category) |&gt; 
   dplyr::summarise(
@@ -523,6 +529,202 @@ the total jobs</p>
 ## 2 fulltime       1257       0.100 
 ## 3 internship       86       0.0116</code></pre>
 </div>
+<div id="q2-among-full-time-postings-which-states-have-the-highest-remote-share" class="section level2">
+<h2>Q2 – Among full-time postings, which states have the highest remote
+share?</h2>
+<p>Keep one category, collapse to one row per state, keep the states
+with enough postings to trust a share, sort. Four verbs, one chain; each
+one answers a “but” from the room.</p>
+<pre class="r"><code>jobs |&gt; 
+  dplyr::group_by(category, location_state) |&gt; 
+  dplyr::summarise(
+    postings = dplyr::n(),
+    remote_share = mean(remote) |&gt; round(digits=2)
+  ) |&gt; 
+  dplyr::arrange(dplyr::desc(remote_share)) |&gt; 
+  na.omit() # to drop the location_state = NA </code></pre>
+<pre><code>## `summarise()` has regrouped the output.
+## ℹ Summaries were computed grouped by category and location_state.
+## ℹ Output is grouped by category.
+## ℹ Use `summarise(.groups = &quot;drop_last&quot;)` to silence this message.
+## ℹ Use `summarise(.by = c(category, location_state))` for per-operation grouping
+##   (`?dplyr::dplyr_by`) instead.</code></pre>
+<pre><code>## # A tibble: 68 × 4
+## # Groups:   category [3]
+##    category location_state postings remote_share
+##    &lt;chr&gt;    &lt;chr&gt;             &lt;int&gt;        &lt;dbl&gt;
+##  1 fulltime OH                   95         0.18
+##  2 fulltime NC                   98         0.13
+##  3 fulltime KY                   18         0.11
+##  4 fulltime PA                   79         0.11
+##  5 fulltime IL                  125         0.1 
+##  6 fulltime IN                   52         0.1 
+##  7 fulltime NY                  156         0.1 
+##  8 fulltime TX                  248         0.1 
+##  9 fulltime GA                  106         0.08
+## 10 fulltime CA                  272         0.06
+## # ℹ 58 more rows</code></pre>
+<pre class="r"><code># Alternative way
+jobs |&gt; 
+  dplyr:: filter(category == &#39;fulltime&#39;) |&gt; 
+  dplyr::group_by(location_state) |&gt; 
+  dplyr::summarise(
+    postings = dplyr::n(),
+    remote_share = mean(remote) |&gt; round(digits=2)
+  ) |&gt; 
+  dplyr::arrange(dplyr::desc(remote_share)) |&gt; 
+  na.omit() # to drop the location_state = NA </code></pre>
+<pre><code>## # A tibble: 11 × 3
+##    location_state postings remote_share
+##    &lt;chr&gt;             &lt;int&gt;        &lt;dbl&gt;
+##  1 OH                   95         0.18
+##  2 NC                   98         0.13
+##  3 KY                   18         0.11
+##  4 PA                   79         0.11
+##  5 IL                  125         0.1 
+##  6 IN                   52         0.1 
+##  7 NY                  156         0.1 
+##  8 TX                  248         0.1 
+##  9 GA                  106         0.08
+## 10 CA                  272         0.06
+## 11 MD                    1         0</code></pre>
+</div>
+<div id="q3-does-the-kind-of-role-matter" class="section level2">
+<h2>Q3 – Does the kind of role matter?</h2>
+<p>The title column is free text, so the first step is a new column that
+reads it: dplyr::case_when() turns a set of tests into labels, in order,
+first match wins. Then the same pair of verbs as tab 1, plus how long
+each role stays posted.</p>
+</div>
+</div>
+<div id="joins" class="section level1">
+<h1>Joins</h1>
+<pre class="r"><code>states = tibble::tibble(location_state = state.abb,
+                        state_name = state.name,
+                        region = as.character(state.region))
+
+jobs |&gt;
+  dplyr::left_join(states, by = &quot;location_state&quot;) |&gt;
+  dplyr::group_by(region) |&gt;
+  dplyr::summarize(postings = dplyr::n(), remote_share = mean(remote)) |&gt;
+  dplyr::arrange(dplyr::desc(postings))</code></pre>
+<pre><code>## # A tibble: 5 × 3
+##   region        postings remote_share
+##   &lt;chr&gt;            &lt;int&gt;        &lt;dbl&gt;
+## 1 South              711       0.0675
+## 2 West               420       0.0357
+## 3 North Central      373       0.0965
+## 4 Northeast          299       0.0836
+## 5 &lt;NA&gt;                88       0.0341</code></pre>
+<div id="anti-joins" class="section level2">
+<h2>Anti-joins</h2>
+<pre class="r"><code>jobs |&gt; dplyr::count(location_state) |&gt; dplyr::anti_join(states, by = &quot;location_state&quot;)</code></pre>
+<pre><code>## # A tibble: 2 × 2
+##   location_state     n
+##   &lt;chr&gt;          &lt;int&gt;
+## 1 DC                58
+## 2 &lt;NA&gt;              30</code></pre>
+</div>
+</div>
+<div id="airbnb-listings" class="section level1">
+<h1>Airbnb listings</h1>
+<pre class="r"><code>con = DBI::dbConnect(RSQLite::SQLite(), &quot;../data/midwest_airbnb.db&quot;)
+listings = DBI::dbReadTable(con, &quot;listings&quot;) |&gt;
+  tibble::as_tibble()
+DBI::dbDisconnect(con)</code></pre>
+<ol style="list-style-type: decimal">
+<li>How many listings per city?</li>
+</ol>
+<pre class="r"><code>listings |&gt;  
+  dplyr::group_by(city) |&gt; 
+  dplyr::summarise(count = dplyr::n())</code></pre>
+<pre><code>## # A tibble: 3 × 2
+##   city        count
+##   &lt;chr&gt;       &lt;int&gt;
+## 1 Chicago      7439
+## 2 Columbus     2587
+## 3 Twin Cities  4861</code></pre>
+<pre class="r"><code># short cut using count
+listings |&gt; 
+  dplyr::count(city)</code></pre>
+<pre><code>## # A tibble: 3 × 2
+##   city            n
+##   &lt;chr&gt;       &lt;int&gt;
+## 1 Chicago      7439
+## 2 Columbus     2587
+## 3 Twin Cities  4861</code></pre>
+<pre class="r"><code># alternatively, you can count the number of times each city occurred in the city column
+table(listings$city) # returns named vector</code></pre>
+<pre><code>## 
+##     Chicago    Columbus Twin Cities 
+##        7439        2587        4861</code></pre>
+<ol start="2" style="list-style-type: decimal">
+<li>For entire homes (room_type == “Entire home/apt”) that sleep four or
+more, what is the median price in each city?</li>
+</ol>
+<pre class="r"><code>listings |&gt; 
+  dplyr::filter(room_type == &quot;Entire home/apt&quot; &amp; accommodates &gt;= 4) |&gt; 
+  dplyr::group_by(city) |&gt; 
+  dplyr::summarise(median_price = median(price))</code></pre>
+<pre><code>## # A tibble: 3 × 2
+##   city        median_price
+##   &lt;chr&gt;              &lt;dbl&gt;
+## 1 Chicago             312 
+## 2 Columbus            240.
+## 3 Twin Cities         311</code></pre>
+<ol start="3" style="list-style-type: decimal">
+<li>Add price_per_person = price / accommodates. Which three listings
+are cheapest per person? Believe them?</li>
+</ol>
+<pre class="r"><code>listings |&gt; 
+  dplyr::mutate(price_per_person = price / accommodates) |&gt; 
+  dplyr::select(city, host_name, name, price, accommodates, price_per_person) |&gt; 
+  dplyr::arrange(price_per_person) |&gt; 
+  head(3)</code></pre>
+<pre><code>## # A tibble: 3 × 6
+##   city        host_name name                 price accommodates price_per_person
+##   &lt;chr&gt;       &lt;chr&gt;     &lt;chr&gt;                &lt;dbl&gt;        &lt;int&gt;            &lt;dbl&gt;
+## 1 Twin Cities Ana       Casa hermosa y tran…  4.17            7            0.596
+## 2 Twin Cities Tayva     Boho Modern Condo R… 12.3             6            2.06 
+## 3 Chicago     Dan       Entire Two Bedroom …  9.57            4            2.39</code></pre>
+<ol start="4" style="list-style-type: decimal">
+<li>Which five host_names have the most listings?</li>
+</ol>
+<pre class="r"><code># host names are not unique, host_ids are
+
+listings |&gt; 
+  dplyr::count(host_name, sort = T)</code></pre>
+<pre><code>## # A tibble: 3,328 × 2
+##    host_name               n
+##    &lt;chr&gt;               &lt;int&gt;
+##  1 Evolve                158
+##  2 RoomPicks             145
+##  3 David                 129
+##  4 Luxury Bookings Fze   104
+##  5 Jessica               102
+##  6 Matt                   95
+##  7 Michael                93
+##  8 Minnestay              89
+##  9 John                   88
+## 10 ⁨Cloud9⁩                 88
+## # ℹ 3,318 more rows</code></pre>
+<pre class="r"><code># this code finds unique hosts through host_id
+listings |&gt; 
+  dplyr::count(host_name, host_id, sort = T)</code></pre>
+<pre><code>## # A tibble: 6,970 × 3
+##    host_name                host_id       n
+##    &lt;chr&gt;                    &lt;chr&gt;     &lt;int&gt;
+##  1 Luxury Bookings Fze      446820235   104
+##  2 Evolve                   456378235    95
+##  3 Minnestay                24051954     89
+##  4 ⁨Cloud9⁩                   248760412    88
+##  5 RoomPicks                501999514    80
+##  6 Jessica                  28252451     78
+##  7 Matt                     391945218    73
+##  8 RoomPicks Accommodations 5615582      68
+##  9 Milan                    395498979    67
+## 10 Sara                     432234139    63
+## # ℹ 6,960 more rows</code></pre>
 </div>
 
 
