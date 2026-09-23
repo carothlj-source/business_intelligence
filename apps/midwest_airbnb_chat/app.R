@@ -14,3 +14,5 @@ qc = querychat::querychat(
   extra_instructions = "data/extra_instructions.md",
   data_description = "data/data_description.md"
 )
+
+qc$app_obj()
