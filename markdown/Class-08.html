@@ -1597,73 +1597,151 @@ border-radius: 0px;
 <div id="cincinnati-crash-reports" class="section level1">
 <h1>Cincinnati Crash Reports</h1>
 <p><strong>API URL</strong></p>
+<p><em>Application Programming Interface</em></p>
 <blockquote>
 <p><a href="https://data.cincinnati-oh.gov/resource/rvmt-pkmq.json?$limit=5&amp;$order=crashdate" class="uri">https://data.cincinnati-oh.gov/resource/rvmt-pkmq.json?$limit=5&amp;$order=crashdate</a></p>
 </blockquote>
 <div id="a-request-step-by-step" class="section level2">
 <h2>A Request, Step by Step</h2>
-<pre class="r"><code># The address- Blue is the server. Green is the path to one dataset on it. Both come from the API documentation.
+<pre class="r"><code># The address- blue is the server, green is the path to one dataset on it (both come from the API documentation)
 httr2::request(&quot;https://data.cincinnati-oh.gov/resource/rvmt-pkmq.json&quot;) |&gt;
-  # The query parameters- After the ? come name=value pairs that the documentation defines. $limit=5 asks for five rows.
+  # The query parameters- after the ? come name=value pairs that the documentation defines ($limit=5 asks for five rows)
+  # &amp; separates one parameter from the next
   httr2::req_url_query(&quot;$limit&quot; = 5) |&gt;
-  # Send- req_perform() is the only line that touches the network. Everything before it only wrote the request.
+  # Send- req_perform() is the only line that touches the network (everything before it only wrote the request)
   httr2::req_perform() |&gt;
-  # The reply- A status code first (200 means OK).
+  # The reply- a status code first (200 means OK, 429 too many requests)
   httr2::resp_body_string() |&gt;
-  # jsonlite::fromJSON() turns the JSON text into a data frame.
-  jsonlite::fromJSON()</code></pre>
-<pre><code>##         address_x latitude_x longitude_x  age community_council_neighborhood
-## 1 S I75 AT 8-5 MM  39.186335  -84.482478   27                            N/A
-## 2 S I75 AT 8-5 MM  39.187715  -84.482218   24                            N/A
-## 3 16XX YONKERS AV   39.10361   -84.51171 &lt;NA&gt;                       DOWNTOWN
-## 4 55XX MEDPACE WY  39.160986  -84.400821   18                   MADISONVILLE
-## 5 55XX MEDPACE WY  39.161686  -84.401531   37                   MADISONVILLE
-##        cpd_neighborhood sna_neighborhood               crashdate
-## 1                   N/A              N/A 2026-08-23T14:00:00.000
-## 2                   N/A              N/A 2026-08-23T14:00:00.000
-## 3 C. B. D. / RIVERFRONT         DOWNTOWN 2026-08-23T13:57:00.000
-## 4          MADISONVILLE     MADISONVILLE 2026-08-23T13:53:00.000
-## 5          MADISONVILLE     MADISONVILLE 2026-08-23T13:53:00.000
-##                  crashseverity crashseverityid       datecrashreported
-## 1 2 - SERIOUS INJURY SUSPECTED          201902 2026-08-23T14:04:00.000
-## 2 2 - SERIOUS INJURY SUSPECTED          201902 2026-08-23T14:04:00.000
-## 3     5 - PROPERTY DAMAGE ONLY          201905 2026-08-23T13:57:00.000
-## 4     5 - PROPERTY DAMAGE ONLY          201905 2026-08-23T13:53:00.000
-## 5     5 - PROPERTY DAMAGE ONLY          201905 2026-08-23T13:53:00.000
-##   dayofweek     gender                     injuries
-## 1       SUN   M - MALE 2 - SUSPECTED SERIOUS INJURY
-## 2       SUN   M - MALE      5 - NO APPARENTY INJURY
-## 3       SUN F - FEMALE      5 - NO APPARENTY INJURY
-## 4       SUN   M - MALE      5 - NO APPARENTY INJURY
-## 5       SUN   M - MALE      5 - NO APPARENTY INJURY
-##                             instanceid lightconditionsprimary localreportno
-## 1 351DA301-B443-429F-A509-B4FAD8C7C13F           1 - DAYLIGHT     265009281
-## 2 351DA301-B443-429F-A509-B4FAD8C7C13F           1 - DAYLIGHT     265009281
-## 3 7617C11A-52A6-480B-91D8-BAA05420231E           1 - DAYLIGHT     265009280
-## 4 290BF5EE-4D29-444B-93FC-BF21544EB768           1 - DAYLIGHT     265009279
-## 5 290BF5EE-4D29-444B-93FC-BF21544EB768           1 - DAYLIGHT     265009279
-##                   mannerofcrash roadconditionsprimary        roadcontour
-## 1                  2 - REAR-END              01 - DRY 2 - STRAIGHT GRADE
-## 2                  2 - REAR-END              01 - DRY 2 - STRAIGHT GRADE
-## 3 7 - SIDESWIPE, SAME DIRECTION              01 - DRY 2 - STRAIGHT GRADE
-## 4                     6 - ANGLE              01 - DRY 1 - STRAIGHT LEVEL
-## 5                     6 - ANGLE              01 - DRY 1 - STRAIGHT LEVEL
-##                         roadsurface                  unittype typeofperson
-## 1 2 - BLACKTOP, BITUMINOUS, ASPHALT 07 - MOTORCYCLE 2 WHEELED   D - DRIVER
-## 2 2 - BLACKTOP, BITUMINOUS, ASPHALT        01 - PASSENGER CAR   D - DRIVER
-## 3 2 - BLACKTOP, BITUMINOUS, ASPHALT        01 - PASSENGER CAR   D - DRIVER
-## 4 2 - BLACKTOP, BITUMINOUS, ASPHALT        01 - PASSENGER CAR   D - DRIVER
-## 5 2 - BLACKTOP, BITUMINOUS, ASPHALT        01 - PASSENGER CAR   D - DRIVER
-##     weather   zip roadclass        roadclassdesc
-## 1 1 - CLEAR 45237      &lt;NA&gt;                 &lt;NA&gt;
-## 2 1 - CLEAR 45237      &lt;NA&gt;                 &lt;NA&gt;
-## 3 1 - CLEAR 45225      &lt;NA&gt;                 &lt;NA&gt;
-## 4 1 - CLEAR 45227         3 Minor Arterial Roads
-## 5 1 - CLEAR 45227         3 Minor Arterial Roads</code></pre>
+  # jsonlite::fromJSON() turns the JSON text into a data frame
+  jsonlite::fromJSON() -&gt; cincy_crashes</code></pre>
+</div>
+</div>
+<div id="fred-api-key" class="section level1">
+<h1>FRED API Key</h1>
+<pre class="r"><code>httr2::request(&quot;https://api.stlouisfed.org/fred/series/observations&quot;) |&gt;
+  httr2::req_url_query(
+    series_id = &quot;IHLIDXUSOH&quot;,
+    api_key = Sys.getenv(&quot;FRED_API_KEY&quot;),
+    file_type = &quot;json&quot;
+  ) |&gt;
+  # nothing has been sent yet
+  httr2::req_perform() |&gt;
+  httr2::resp_body_string() |&gt;
+  jsonlite::fromJSON() -&gt; ohio_jobs</code></pre>
+<div id="find-observations-in-the-df" class="section level2">
+<h2>Find observations in the df</h2>
+<pre class="r"><code>dplyr::glimpse(ohio_jobs)</code></pre>
+<pre><code>## List of 13
+##  $ realtime_start   : chr &quot;2026-09-23&quot;
+##  $ realtime_end     : chr &quot;2026-09-23&quot;
+##  $ observation_start: chr &quot;1600-01-01&quot;
+##  $ observation_end  : chr &quot;9999-12-31&quot;
+##  $ units            : chr &quot;lin&quot;
+##  $ output_type      : int 1
+##  $ file_type        : chr &quot;json&quot;
+##  $ order_by         : chr &quot;observation_date&quot;
+##  $ sort_order       : chr &quot;asc&quot;
+##  $ count            : int 2415
+##  $ offset           : int 0
+##  $ limit            : int 100000
+##  $ observations     :&#39;data.frame&#39;:   2415 obs. of  4 variables:
+##   ..$ realtime_start: chr [1:2415] &quot;2026-09-23&quot; &quot;2026-09-23&quot; &quot;2026-09-23&quot; &quot;2026-09-23&quot; ...
+##   ..$ realtime_end  : chr [1:2415] &quot;2026-09-23&quot; &quot;2026-09-23&quot; &quot;2026-09-23&quot; &quot;2026-09-23&quot; ...
+##   ..$ date          : chr [1:2415] &quot;2020-02-01&quot; &quot;2020-02-02&quot; &quot;2020-02-03&quot; &quot;2020-02-04&quot; ...
+##   ..$ value         : chr [1:2415] &quot;100.0&quot; &quot;99.99&quot; &quot;99.96&quot; &quot;100.01&quot; ...</code></pre>
+<pre class="r"><code># pull observations
+jobs_df = ohio_jobs[[13]]</code></pre>
+</div>
+<div id="get-data-from-sept-1-2026" class="section level2">
+<h2>Get data from Sept 1 , 2026</h2>
+<pre class="r"><code># (a) get all the data then filter all the rows I want
+dplyr::glimpse(jobs_df)</code></pre>
+<pre><code>## Rows: 2,415
+## Columns: 4
+## $ realtime_start &lt;chr&gt; &quot;2026-09-23&quot;, &quot;2026-09-23&quot;, &quot;2026-09-23&quot;, &quot;2026-09-23&quot;,…
+## $ realtime_end   &lt;chr&gt; &quot;2026-09-23&quot;, &quot;2026-09-23&quot;, &quot;2026-09-23&quot;, &quot;2026-09-23&quot;,…
+## $ date           &lt;chr&gt; &quot;2020-02-01&quot;, &quot;2020-02-02&quot;, &quot;2020-02-03&quot;, &quot;2020-02-04&quot;,…
+## $ value          &lt;chr&gt; &quot;100.0&quot;, &quot;99.99&quot;, &quot;99.96&quot;, &quot;100.01&quot;, &quot;100.04&quot;, &quot;100.17&quot;…</code></pre>
+<pre class="r"><code># convert date from character to date
+jobs_df |&gt; 
+  dplyr::mutate(
+    date = lubridate::ymd(date)) |&gt; 
+  dplyr::filter(date &gt;= &#39;2026-09-01&#39;) -&gt; jobs_df_mod
+
+
+# (b) use the API 
+httr2::request(&quot;https://api.stlouisfed.org/fred/series/observations&quot;) |&gt;
+  httr2::req_url_query(
+    series_id = &quot;IHLIDXUSOH&quot;,
+    api_key = Sys.getenv(&quot;FRED_API_KEY&quot;),
+    file_type = &quot;json&quot;,
+    observation_start=&#39;2026-09-01&#39; # only thing different than original API request
+  ) |&gt;
+  # nothing has been sent yet
+  httr2::req_perform() |&gt;
+  httr2::resp_body_string() |&gt;
+  jsonlite::fromJSON() -&gt; ohio_jobs_sep_2026
+
+ohio_jobs_sep_2026 = ohio_jobs_sep_2026$observations # add this to only have observations in data frame</code></pre>
+</div>
+</div>
+<div id="usa-jobs-api" class="section level1">
+<h1>USA Jobs API</h1>
+<pre class="r"><code>httr2::request(&quot;https://data.usajobs.gov/api/search&quot;) |&gt;
+  httr2::req_url_query(Keyword = &quot;Data Analyst&quot;, ResultsPerPage = 500) |&gt;
+  httr2::req_headers(
+    Host = &quot;data.usajobs.gov&quot;,
+    &quot;User-Agent&quot; = &quot;carothlj@miamioh.edu&quot;,
+    &quot;Authorization-Key&quot; = Sys.getenv(&quot;USAJOBS_API_KEY&quot;)
+  ) |&gt;
+  httr2::req_perform() |&gt;
+  httr2::resp_body_string() |&gt;
+  jsonlite::fromJSON(flatten = TRUE) -&gt; usa_jobs_list
+
+usa_df = usa_jobs_list$SearchResult$SearchResultItems</code></pre>
+<div id="from-nested-json-to-a-data-frame" class="section level2">
+<h2>From Nested JSON to a Data Frame</h2>
+<pre class="r"><code>jobs_small = usa_df |&gt;
+  dplyr::select(
+    title = MatchedObjectDescriptor.PositionTitle,
+    department = MatchedObjectDescriptor.DepartmentName,
+    agency = MatchedObjectDescriptor.OrganizationName,
+    location = MatchedObjectDescriptor.PositionLocationDisplay,
+    closes = MatchedObjectDescriptor.ApplicationCloseDate
+  )</code></pre>
+</div>
+<div id="practice-federal-data-analyst-jobs" class="section level2">
+<h2>Practice: Federal Data Analyst Jobs</h2>
+<ol style="list-style-type: decimal">
+<li>How many federal postings match “Data Analyst” today?</li>
+</ol>
+<pre class="r"><code># based on the API read in
+nrow(jobs_small)</code></pre>
+<pre><code>## [1] 243</code></pre>
+<pre class="r"><code># returns just the term &#39;Data Analyst&#39;
+data_analysts = jobs_small |&gt;
+  dplyr::filter(title == &#39;Data Analyst&#39;)
+
+# 
+index_data_analysts = jobs_small$title |&gt; 
+  stringr::str_detect(pattern = &#39;Data Analyst|Data Analytics*&#39;)
+
+jobs= jobs_small[index_data_analysts, ]
+table(jobs$department)</code></pre>
+<pre><code>## 
+##            Department of Energy Department of Homeland Security 
+##                               1                               2 
+##             Department of State  Department of Veterans Affairs 
+##                               2                               1 
+## General Services Administration 
+##                               1</code></pre>
+<ol start="2" style="list-style-type: decimal">
+<li>Which three departments have the most of them?</li>
+</ol>
 </div>
 </div>
 
-<div id="rmd-source-code">LS0tDQp0aXRsZTogIkNsYXNzIDA4Ig0KYXV0aG9yOiAiTGluZHNleSBDYXJvdGhlcnMiDQpkYXRlOiAiMjAyNi0wOS0yMSINCm91dHB1dDogDQogIGh0bWxfZG9jdW1lbnQ6DQogICAgdG9jOiB0cnVlDQogICAgdG9jX2Zsb2F0OiB0cnVlDQogICAgY29kZV9mb2xkaW5nOiBzaG93DQogICAgY29kZV9kb3dubG9hZDogdHJ1ZQ0KLS0tDQoNCmBgYHtyIHNldHVwLCBpbmNsdWRlPUZBTFNFfQ0Ka25pdHI6Om9wdHNfY2h1bmskc2V0KGVjaG8gPSBUUlVFKQ0KYGBgDQoNCiMgQ2luY2lubmF0aSBDcmFzaCBSZXBvcnRzDQoNCioqQVBJIFVSTCoqDQoNCj4gaHR0cHM6Ly9kYXRhLmNpbmNpbm5hdGktb2guZ292L3Jlc291cmNlL3J2bXQtcGttcS5qc29uPyRsaW1pdD01JiRvcmRlcj1jcmFzaGRhdGUNCg0KIyMgQSBSZXF1ZXN0LCBTdGVwIGJ5IFN0ZXANCmBgYHtyIGFwaV9pbnRyb30NCiMgVGhlIGFkZHJlc3MtIEJsdWUgaXMgdGhlIHNlcnZlci4gR3JlZW4gaXMgdGhlIHBhdGggdG8gb25lIGRhdGFzZXQgb24gaXQuIEJvdGggY29tZSBmcm9tIHRoZSBBUEkgZG9jdW1lbnRhdGlvbi4NCmh0dHIyOjpyZXF1ZXN0KCJodHRwczovL2RhdGEuY2luY2lubmF0aS1vaC5nb3YvcmVzb3VyY2UvcnZtdC1wa21xLmpzb24iKSB8Pg0KICAjIFRoZSBxdWVyeSBwYXJhbWV0ZXJzLSBBZnRlciB0aGUgPyBjb21lIG5hbWU9dmFsdWUgcGFpcnMgdGhhdCB0aGUgZG9jdW1lbnRhdGlvbiBkZWZpbmVzLiAkbGltaXQ9NSBhc2tzIGZvciBmaXZlIHJvd3MuDQogIGh0dHIyOjpyZXFfdXJsX3F1ZXJ5KCIkbGltaXQiID0gNSkgfD4NCiAgIyBTZW5kLSByZXFfcGVyZm9ybSgpIGlzIHRoZSBvbmx5IGxpbmUgdGhhdCB0b3VjaGVzIHRoZSBuZXR3b3JrLiBFdmVyeXRoaW5nIGJlZm9yZSBpdCBvbmx5IHdyb3RlIHRoZSByZXF1ZXN0Lg0KICBodHRyMjo6cmVxX3BlcmZvcm0oKSB8Pg0KICAjIFRoZSByZXBseS0gQSBzdGF0dXMgY29kZSBmaXJzdCAoMjAwIG1lYW5zIE9LKS4NCiAgaHR0cjI6OnJlc3BfYm9keV9zdHJpbmcoKSB8Pg0KICAjIGpzb25saXRlOjpmcm9tSlNPTigpIHR1cm5zIHRoZSBKU09OIHRleHQgaW50byBhIGRhdGEgZnJhbWUuDQogIGpzb25saXRlOjpmcm9tSlNPTigpDQpgYGA=</div>
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIkNsYXNzIDA4Ig0KYXV0aG9yOiAiTGluZHNleSBDYXJvdGhlcnMiDQpkYXRlOiAiMjAyNi0wOS0yMSINCm91dHB1dDogDQogIGh0bWxfZG9jdW1lbnQ6DQogICAgdG9jOiB0cnVlDQogICAgdG9jX2Zsb2F0OiB0cnVlDQogICAgY29kZV9mb2xkaW5nOiBzaG93DQogICAgY29kZV9kb3dubG9hZDogdHJ1ZQ0KLS0tDQoNCmBgYHtyIHNldHVwLCBpbmNsdWRlPUZBTFNFfQ0Ka25pdHI6Om9wdHNfY2h1bmskc2V0KGVjaG8gPSBUUlVFKQ0KYGBgDQoNCiMgQ2luY2lubmF0aSBDcmFzaCBSZXBvcnRzDQoNCioqQVBJIFVSTCoqDQoNCipBcHBsaWNhdGlvbiBQcm9ncmFtbWluZyBJbnRlcmZhY2UqDQoNCj4gaHR0cHM6Ly9kYXRhLmNpbmNpbm5hdGktb2guZ292L3Jlc291cmNlL3J2bXQtcGttcS5qc29uPyRsaW1pdD01JiRvcmRlcj1jcmFzaGRhdGUNCg0KIyMgQSBSZXF1ZXN0LCBTdGVwIGJ5IFN0ZXANCmBgYHtyIGFwaV9pbnRyb30NCiMgVGhlIGFkZHJlc3MtIGJsdWUgaXMgdGhlIHNlcnZlciwgZ3JlZW4gaXMgdGhlIHBhdGggdG8gb25lIGRhdGFzZXQgb24gaXQgKGJvdGggY29tZSBmcm9tIHRoZSBBUEkgZG9jdW1lbnRhdGlvbikNCmh0dHIyOjpyZXF1ZXN0KCJodHRwczovL2RhdGEuY2luY2lubmF0aS1vaC5nb3YvcmVzb3VyY2UvcnZtdC1wa21xLmpzb24iKSB8Pg0KICAjIFRoZSBxdWVyeSBwYXJhbWV0ZXJzLSBhZnRlciB0aGUgPyBjb21lIG5hbWU9dmFsdWUgcGFpcnMgdGhhdCB0aGUgZG9jdW1lbnRhdGlvbiBkZWZpbmVzICgkbGltaXQ9NSBhc2tzIGZvciBmaXZlIHJvd3MpDQogICMgJiBzZXBhcmF0ZXMgb25lIHBhcmFtZXRlciBmcm9tIHRoZSBuZXh0DQogIGh0dHIyOjpyZXFfdXJsX3F1ZXJ5KCIkbGltaXQiID0gNSkgfD4NCiAgIyBTZW5kLSByZXFfcGVyZm9ybSgpIGlzIHRoZSBvbmx5IGxpbmUgdGhhdCB0b3VjaGVzIHRoZSBuZXR3b3JrIChldmVyeXRoaW5nIGJlZm9yZSBpdCBvbmx5IHdyb3RlIHRoZSByZXF1ZXN0KQ0KICBodHRyMjo6cmVxX3BlcmZvcm0oKSB8Pg0KICAjIFRoZSByZXBseS0gYSBzdGF0dXMgY29kZSBmaXJzdCAoMjAwIG1lYW5zIE9LLCA0MjkgdG9vIG1hbnkgcmVxdWVzdHMpDQogIGh0dHIyOjpyZXNwX2JvZHlfc3RyaW5nKCkgfD4NCiAgIyBqc29ubGl0ZTo6ZnJvbUpTT04oKSB0dXJucyB0aGUgSlNPTiB0ZXh0IGludG8gYSBkYXRhIGZyYW1lDQogIGpzb25saXRlOjpmcm9tSlNPTigpIC0+IGNpbmN5X2NyYXNoZXMNCmBgYA0KDQoNCiMgRlJFRCBBUEkgS2V5DQoNCmBgYHtyIGZyZWR9DQpodHRyMjo6cmVxdWVzdCgiaHR0cHM6Ly9hcGkuc3Rsb3Vpc2ZlZC5vcmcvZnJlZC9zZXJpZXMvb2JzZXJ2YXRpb25zIikgfD4NCiAgaHR0cjI6OnJlcV91cmxfcXVlcnkoDQogICAgc2VyaWVzX2lkID0gIklITElEWFVTT0giLA0KICAgIGFwaV9rZXkgPSBTeXMuZ2V0ZW52KCJGUkVEX0FQSV9LRVkiKSwNCiAgICBmaWxlX3R5cGUgPSAianNvbiINCiAgKSB8Pg0KICAjIG5vdGhpbmcgaGFzIGJlZW4gc2VudCB5ZXQNCiAgaHR0cjI6OnJlcV9wZXJmb3JtKCkgfD4NCiAgaHR0cjI6OnJlc3BfYm9keV9zdHJpbmcoKSB8Pg0KICBqc29ubGl0ZTo6ZnJvbUpTT04oKSAtPiBvaGlvX2pvYnMNCmBgYA0KDQojIyBGaW5kIG9ic2VydmF0aW9ucyBpbiB0aGUgZGYNCmBgYHtyfQ0KZHBseXI6OmdsaW1wc2Uob2hpb19qb2JzKQ0KDQojIHB1bGwgb2JzZXJ2YXRpb25zDQpqb2JzX2RmID0gb2hpb19qb2JzW1sxM11dDQpgYGANCg0KIyMgR2V0IGRhdGEgZnJvbSBTZXB0IDEgLCAyMDI2DQpgYGB7cn0NCiMgKGEpIGdldCBhbGwgdGhlIGRhdGEgdGhlbiBmaWx0ZXIgYWxsIHRoZSByb3dzIEkgd2FudA0KZHBseXI6OmdsaW1wc2Uoam9ic19kZikNCg0KIyBjb252ZXJ0IGRhdGUgZnJvbSBjaGFyYWN0ZXIgdG8gZGF0ZQ0Kam9ic19kZiB8PiANCiAgZHBseXI6Om11dGF0ZSgNCiAgICBkYXRlID0gbHVicmlkYXRlOjp5bWQoZGF0ZSkpIHw+IA0KICBkcGx5cjo6ZmlsdGVyKGRhdGUgPj0gJzIwMjYtMDktMDEnKSAtPiBqb2JzX2RmX21vZA0KDQoNCiMgKGIpIHVzZSB0aGUgQVBJIA0KaHR0cjI6OnJlcXVlc3QoImh0dHBzOi8vYXBpLnN0bG91aXNmZWQub3JnL2ZyZWQvc2VyaWVzL29ic2VydmF0aW9ucyIpIHw+DQogIGh0dHIyOjpyZXFfdXJsX3F1ZXJ5KA0KICAgIHNlcmllc19pZCA9ICJJSExJRFhVU09IIiwNCiAgICBhcGlfa2V5ID0gU3lzLmdldGVudigiRlJFRF9BUElfS0VZIiksDQogICAgZmlsZV90eXBlID0gImpzb24iLA0KICAgIG9ic2VydmF0aW9uX3N0YXJ0PScyMDI2LTA5LTAxJyAjIG9ubHkgdGhpbmcgZGlmZmVyZW50IHRoYW4gb3JpZ2luYWwgQVBJIHJlcXVlc3QNCiAgKSB8Pg0KICAjIG5vdGhpbmcgaGFzIGJlZW4gc2VudCB5ZXQNCiAgaHR0cjI6OnJlcV9wZXJmb3JtKCkgfD4NCiAgaHR0cjI6OnJlc3BfYm9keV9zdHJpbmcoKSB8Pg0KICBqc29ubGl0ZTo6ZnJvbUpTT04oKSAtPiBvaGlvX2pvYnNfc2VwXzIwMjYNCg0Kb2hpb19qb2JzX3NlcF8yMDI2ID0gb2hpb19qb2JzX3NlcF8yMDI2JG9ic2VydmF0aW9ucyAjIGFkZCB0aGlzIHRvIG9ubHkgaGF2ZSBvYnNlcnZhdGlvbnMgaW4gZGF0YSBmcmFtZQ0KYGBgDQoNCiMgVVNBIEpvYnMgQVBJDQpgYGB7cn0NCmh0dHIyOjpyZXF1ZXN0KCJodHRwczovL2RhdGEudXNham9icy5nb3YvYXBpL3NlYXJjaCIpIHw+DQogIGh0dHIyOjpyZXFfdXJsX3F1ZXJ5KEtleXdvcmQgPSAiRGF0YSBBbmFseXN0IiwgUmVzdWx0c1BlclBhZ2UgPSA1MDApIHw+DQogIGh0dHIyOjpyZXFfaGVhZGVycygNCiAgICBIb3N0ID0gImRhdGEudXNham9icy5nb3YiLA0KICAgICJVc2VyLUFnZW50IiA9ICJjYXJvdGhsakBtaWFtaW9oLmVkdSIsDQogICAgIkF1dGhvcml6YXRpb24tS2V5IiA9IFN5cy5nZXRlbnYoIlVTQUpPQlNfQVBJX0tFWSIpDQogICkgfD4NCiAgaHR0cjI6OnJlcV9wZXJmb3JtKCkgfD4NCiAgaHR0cjI6OnJlc3BfYm9keV9zdHJpbmcoKSB8Pg0KICBqc29ubGl0ZTo6ZnJvbUpTT04oZmxhdHRlbiA9IFRSVUUpIC0+IHVzYV9qb2JzX2xpc3QNCg0KdXNhX2RmID0gdXNhX2pvYnNfbGlzdCRTZWFyY2hSZXN1bHQkU2VhcmNoUmVzdWx0SXRlbXMNCmBgYA0KDQojIyBGcm9tIE5lc3RlZCBKU09OIHRvIGEgRGF0YSBGcmFtZQ0KYGBge3J9DQpqb2JzX3NtYWxsID0gdXNhX2RmIHw+DQogIGRwbHlyOjpzZWxlY3QoDQogICAgdGl0bGUgPSBNYXRjaGVkT2JqZWN0RGVzY3JpcHRvci5Qb3NpdGlvblRpdGxlLA0KICAgIGRlcGFydG1lbnQgPSBNYXRjaGVkT2JqZWN0RGVzY3JpcHRvci5EZXBhcnRtZW50TmFtZSwNCiAgICBhZ2VuY3kgPSBNYXRjaGVkT2JqZWN0RGVzY3JpcHRvci5Pcmdhbml6YXRpb25OYW1lLA0KICAgIGxvY2F0aW9uID0gTWF0Y2hlZE9iamVjdERlc2NyaXB0b3IuUG9zaXRpb25Mb2NhdGlvbkRpc3BsYXksDQogICAgY2xvc2VzID0gTWF0Y2hlZE9iamVjdERlc2NyaXB0b3IuQXBwbGljYXRpb25DbG9zZURhdGUNCiAgKQ0KYGBgDQoNCiMjIFByYWN0aWNlOiBGZWRlcmFsIERhdGEgQW5hbHlzdCBKb2JzDQoNCjEuIEhvdyBtYW55IGZlZGVyYWwgcG9zdGluZ3MgbWF0Y2ggIkRhdGEgQW5hbHlzdCIgdG9kYXk/DQpgYGB7cn0NCiMgYmFzZWQgb24gdGhlIEFQSSByZWFkIGluDQpucm93KGpvYnNfc21hbGwpDQoNCiMgcmV0dXJucyBqdXN0IHRoZSB0ZXJtICdEYXRhIEFuYWx5c3QnDQpkYXRhX2FuYWx5c3RzID0gam9ic19zbWFsbCB8Pg0KICBkcGx5cjo6ZmlsdGVyKHRpdGxlID09ICdEYXRhIEFuYWx5c3QnKQ0KDQojIA0KaW5kZXhfZGF0YV9hbmFseXN0cyA9IGpvYnNfc21hbGwkdGl0bGUgfD4gDQogIHN0cmluZ3I6OnN0cl9kZXRlY3QocGF0dGVybiA9ICdEYXRhIEFuYWx5c3R8RGF0YSBBbmFseXRpY3MqJykNCg0Kam9icz0gam9ic19zbWFsbFtpbmRleF9kYXRhX2FuYWx5c3RzLCBdDQp0YWJsZShqb2JzJGRlcGFydG1lbnQpDQpgYGANCg0KMi4gV2hpY2ggdGhyZWUgZGVwYXJ0bWVudHMgaGF2ZSB0aGUgbW9zdCBvZiB0aGVtPw0KYGBge3J9DQoNCmBgYA0KDQoNCg0KDQoNCg0KDQoNCg==</div>
 
 
 </div>

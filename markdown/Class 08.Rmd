@@ -18,6 +18,8 @@ knitr::opts_chunk$set(echo = TRUE)
 
 **API URL**
 
+*Application Programming Interface*
+
 > https://data.cincinnati-oh.gov/resource/rvmt-pkmq.json?$limit=5&$order=crashdate
 
 ## A Request, Step by Step
@@ -25,11 +27,124 @@ knitr::opts_chunk$set(echo = TRUE)
 # The address- blue is the server, green is the path to one dataset on it (both come from the API documentation)
 httr2::request("https://data.cincinnati-oh.gov/resource/rvmt-pkmq.json") |>
   # The query parameters- after the ? come name=value pairs that the documentation defines ($limit=5 asks for five rows)
+  # & separates one parameter from the next
   httr2::req_url_query("$limit" = 5) |>
   # Send- req_perform() is the only line that touches the network (everything before it only wrote the request)
   httr2::req_perform() |>
   # The reply- a status code first (200 means OK, 429 too many requests)
   httr2::resp_body_string() |>
   # jsonlite::fromJSON() turns the JSON text into a data frame
-  jsonlite::fromJSON()
+  jsonlite::fromJSON() -> cincy_crashes
 ```
+
+
+# FRED API Key
+
+```{r fred}
+httr2::request("https://api.stlouisfed.org/fred/series/observations") |>
+  httr2::req_url_query(
+    series_id = "IHLIDXUSOH",
+    api_key = Sys.getenv("FRED_API_KEY"),
+    file_type = "json"
+  ) |>
+  # nothing has been sent yet
+  httr2::req_perform() |>
+  httr2::resp_body_string() |>
+  jsonlite::fromJSON() -> ohio_jobs
+```
+
+## Find observations in the df
+```{r}
+dplyr::glimpse(ohio_jobs)
+
+# pull observations
+jobs_df = ohio_jobs[[13]]
+```
+
+## Get data from Sept 1 , 2026
+```{r}
+# (a) get all the data then filter all the rows I want
+dplyr::glimpse(jobs_df)
+
+# convert date from character to date
+jobs_df |> 
+  dplyr::mutate(
+    date = lubridate::ymd(date)) |> 
+  dplyr::filter(date >= '2026-09-01') -> jobs_df_mod
+
+
+# (b) use the API 
+httr2::request("https://api.stlouisfed.org/fred/series/observations") |>
+  httr2::req_url_query(
+    series_id = "IHLIDXUSOH",
+    api_key = Sys.getenv("FRED_API_KEY"),
+    file_type = "json",
+    observation_start='2026-09-01' # only thing different than original API request
+  ) |>
+  # nothing has been sent yet
+  httr2::req_perform() |>
+  httr2::resp_body_string() |>
+  jsonlite::fromJSON() -> ohio_jobs_sep_2026
+
+ohio_jobs_sep_2026 = ohio_jobs_sep_2026$observations # add this to only have observations in data frame
+```
+
+# USA Jobs API
+```{r}
+httr2::request("https://data.usajobs.gov/api/search") |>
+  httr2::req_url_query(Keyword = "Data Analyst", ResultsPerPage = 500) |>
+  httr2::req_headers(
+    Host = "data.usajobs.gov",
+    "User-Agent" = "carothlj@miamioh.edu",
+    "Authorization-Key" = Sys.getenv("USAJOBS_API_KEY")
+  ) |>
+  httr2::req_perform() |>
+  httr2::resp_body_string() |>
+  jsonlite::fromJSON(flatten = TRUE) -> usa_jobs_list
+
+usa_df = usa_jobs_list$SearchResult$SearchResultItems
+```
+
+## From Nested JSON to a Data Frame
+```{r}
+jobs_small = usa_df |>
+  dplyr::select(
+    title = MatchedObjectDescriptor.PositionTitle,
+    department = MatchedObjectDescriptor.DepartmentName,
+    agency = MatchedObjectDescriptor.OrganizationName,
+    location = MatchedObjectDescriptor.PositionLocationDisplay,
+    closes = MatchedObjectDescriptor.ApplicationCloseDate
+  )
+```
+
+## Practice: Federal Data Analyst Jobs
+
+1. How many federal postings match "Data Analyst" today?
+```{r}
+# based on the API read in
+nrow(jobs_small)
+
+# returns just the term 'Data Analyst'
+data_analysts = jobs_small |>
+  dplyr::filter(title == 'Data Analyst')
+
+# 
+index_data_analysts = jobs_small$title |> 
+  stringr::str_detect(pattern = 'Data Analyst|Data Analytics*')
+
+jobs= jobs_small[index_data_analysts, ]
+table(jobs$department)
+```
+
+2. Which three departments have the most of them?
+```{r}
+
+```
+
+
+
+
+
+
+
+
