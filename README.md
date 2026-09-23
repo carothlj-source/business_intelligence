@@ -8,10 +8,12 @@ Phase II: Data Visualization & Communication (Weeks 8-13)
 
 Phase III: Exploratory Data Mining (Weeks 13-14)
 
-
 =======
 # Skills
 - Git
 - R
 - Tableau
 - Power BI
+
+=======
+**Live app:** https://airbnb-rjej.onrender.com
