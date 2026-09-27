@@ -238,9 +238,7 @@ superhost = listings |>
   )
 
 superhost
-```
 
-```{r}
 # put superhosts and other hosts into separate columns
 # this makes it easier to subtract the two median prices
 superhost_wide = superhost |> 
@@ -249,7 +247,6 @@ superhost_wide = superhost |>
     values_from = c(median_price, median_rating)
   )
 
-# B1: superhost median price minus other-host median price
 superhost_wide |> 
   dplyr::mutate(
     premium = median_price_t - median_price_f
@@ -283,7 +280,7 @@ missing_availability |>
 
 **The badge.** You advise a Twin Cities host who is one good review away from Superhost status. Using your three premiums from Task 7, tell them in two or three sentences whether the badge is likely to raise the price they can charge, and name one other number in this data you would check before telling them the badge is not worth it.
 
-  >In the Twin Cities, Superhosts actually charge about $1.38 less at the median, compared with premiums of $43.80 in Chicago and $40.50 in Columbus. Based on these numbers alone, the Superhost badge does not appear likely to raise the price this Twin Cities host can charge, but I would also check the median ratings (Superhosts have a 4.94 median rating compared with 4.85 for other hosts) before deciding the badge is not worth it.
+  > The Superhost premiums are **$43.75 in Chicago, $40.50 in Columbus, and -$1.38 in the Twin Cities**. Since Twin Cities Superhosts actually charge $1.38 less at the median, the badge does not appear likely to raise the price this host can charge based on this data alone; I would also look at median ratings before deciding the badge is not worth it.
 
 ## B2
 
@@ -297,7 +294,7 @@ listings_hosts |>
 revenue_share
 ```
 
-  > The results show that Chicago has the highest percentage of listings in the top group at **31.90%**, while Columbus has **37.15%** and the Twin Cities has **17.16%**. These top listings account for a large portion of revenue, making up **40.74% in Chicago, 36.08% in Columbus, and 40.27% in the Twin Cities**. This suggests that a smaller group of listings generates a disproportionately large share of revenue, especially in Chicago and the Twin Cities.
+  > Hosts with 10 or more listings hold **37.15% of Columbus listings, 31.90% of Chicago listings, and 17.16% of Twin Cities listings**. The highest-earning 10% of listings account for **36.08% of revenue in Columbus, 40.74% in Chicago, and 40.27% in the Twin Cities**. A ten-listing cap would likely change Columbus the most because it has the largest share of listings held by hosts with 10 or more listings, but this data cannot tell us how hosts would respond to the rule.
 
 
 
