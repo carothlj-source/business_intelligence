@@ -8,7 +8,6 @@ Phase II: Data Visualization & Communication (Weeks 8-13)
 
 Phase III: Exploratory Data Mining (Weeks 13-14)
 
-
 =======
 # Skills
 - Git
