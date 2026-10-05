@@ -11,9 +11,9 @@
 
 <meta name="author" content="Lindsey Carothers" />
 
-<meta name="date" content="2026-09-30" />
+<meta name="date" content="2026-10-05" />
 
-<title>Class 11: Scraping Multiple Webpages</title>
+<title>Class 12</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -1599,131 +1599,61 @@ border-radius: 0px;
 
 
 
-<h1 class="title toc-ignore">Class 11: Scraping Multiple Webpages</h1>
+<h1 class="title toc-ignore">Class 12</h1>
 <h4 class="author">Lindsey Carothers</h4>
-<h4 class="date">2026-09-30</h4>
+<h4 class="date">2026-10-05</h4>
 
 </div>
 
 
-<div id="learning-objectives" class="section level2">
-<h2>Learning Objectives</h2>
-<ul>
-<li>Be able to scrape multiple webpages (from the same site), using a
-‘for’ loop type approach</li>
-<li>Be able to scrape multiple webpages (from the same site) using the
-<a href="https://purrr.tidyverse.org/">purrr package</a>, which is a
-functional programming approach
-<ul>
-<li><strong>Note</strong>: In this package we will create our own
-function</li>
-</ul></li>
-</ul>
-</div>
-<div id="re-examining-the-bulletin-example" class="section level2">
-<h2>Re-examining the bulletin example</h2>
-<p>Let’s try to expand on the example from last class to include the
-following: <a href="https://bulletin.miamioh.edu/courses-instruction/acc/">ACC</a>, <a href="https://bulletin.miamioh.edu/courses-instruction/bus/">BUS</a>, <a href="https://bulletin.miamioh.edu/courses-instruction/isa/">ISA</a>,
-and <a href="https://bulletin.miamioh.edu/courses-instruction/mkt/">MKT</a>.</p>
-<p><strong>COMMENT</strong>: You can repeat your code a few time with
-changing the URL. this will work for a few links but would be quite
-tedious for large amount of scraping. We will follow <strong>DRY
-Principle</strong>, which stands for <strong>Don’t Repeat
-Yourself</strong>.</p>
-<pre class="r"><code>dept_abbrv = c(&#39;acc&#39;, &#39;bus&#39;, &#39;isa&#39;, &#39;mkt&#39;)
-
-courses_df = data.frame() # initializing a container to store stuff in from the loop
-
-# for (variable in vector) {}
-
-for (abbrv in dept_abbrv) {
-  cat(rep(&quot;-&quot;, 50), &quot;\n&quot;)
-  print(abbrv)
-  
-  bulletin_url = paste0(
-    &#39;https://bulletin.miamioh.edu/courses-instruction/&#39;, abbrv, &#39;/&#39;
-    )
-
-  # Intentionally making this an R object instead of a string
-    # we can reuse the rest of our code with only changing the URL
-  webpage = rvest::read_html(bulletin_url)
-
-  webpage |&gt; 
-    rvest::html_elements(&quot;strong&quot;) |&gt; # get all the info that&#39;s in &#39;strong&#39; on the webpage
-    rvest::html_text2() -&gt; titles # cleans out the html text
-
-  webpage |&gt; 
-    rvest::html_elements(&quot;#sc_sccoursedescs &gt; div &gt; p.courseblockdesc&quot;) |&gt; 
-    rvest::html_text2() -&gt; descs
-
-  df = data.frame(title = titles, desc = descs)
-  courses_df = rbind(courses_df, df)
-}</code></pre>
-<pre><code>## - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-## [1] &quot;acc&quot;
-## - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-## [1] &quot;bus&quot;
-## - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-## [1] &quot;isa&quot;
-## - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-## [1] &quot;mkt&quot;</code></pre>
-</div>
-<div id="purrr-approach-for-the-same-problem" class="section level2">
-<h2>‘purrr’ approach for the same problem</h2>
-<p>This is a functional programming approach, and we will write our own
-function. In R, we use function called ‘function’ to create a function.
-as opposed to Python, R functions return a single object.</p>
-<pre class="r"><code># This function takes an abbrv as an input and returns a data_frame as an output
-
-scrape_mu_bulletin = function(abbrv){
-  bulletin_url = paste0(
-    &#39;https://bulletin.miamioh.edu/courses-instruction/&#39;, abbrv, &#39;/&#39;
-    )
-
-  webpage = rvest::read_html(bulletin_url)
-
-  webpage |&gt; 
-    rvest::html_elements(&quot;p.courseblocktitle&quot;) |&gt; 
-    rvest::html_text2() -&gt; titles 
-
-  webpage |&gt; 
-    rvest::html_elements(&quot;#sc_sccoursedescs &gt; div &gt; p.courseblockdesc&quot;) |&gt; 
-    rvest::html_text2() -&gt; descs
-
-  df = data.frame(title = titles, desc = descs)
-  return(df)
-}
-
-test1 = scrape_mu_bulletin(&#39;mgt&#39;)
-test2 = scrape_mu_bulletin(&#39;fin&#39;)
-test3 = scrape_mu_bulletin(&#39;eco&#39;)
-
-# to use functions from purrr, we will use a map_*(), a rmap2_*(), or a pmap_*()
-  # map uses a function that takes a single input (or you are only changing a single input)
-  # map2 uses a function that takes two inputs
-  # pmap &gt;= 3
-# after the _, you put the type of object you are getting back
-
-# .x is the vector that we will iterate over
-  # and .f is the function we use
-courses_df_from_purrr = purrr::map_df(.x = dept_abbrv, .f = scrape_mu_bulletin)</code></pre>
-</div>
-<div id="scrape-data-from-the-website-planecrashinfo" class="section level2">
-<h2>Scrape data from the website <a href="https://www.planecrashinfo.com/">planecrashinfo</a></h2>
-<p>Contains a database of plane crashes by year.</p>
+<div id="continuing-with-the-plane-crash-info-example" class="section level1">
+<h1>Continuing with the plane crash info example</h1>
 <pre class="r"><code>year = 2025
 
-crash_url = paste0(
-  &quot;https://www.planecrashinfo.com/&quot;, year, &quot;/&quot;, year, &quot;.htm&quot;)
-  
-crash_page = rvest::read_html(crash_url)
+crash_url = paste0(&#39;https://www.planecrashinfo.com/&#39;, year, &#39;/&#39;, year, &#39;.htm&#39;)
 
-crash_tables &lt;- crash_page |&gt; 
-  rvest::html_elements(&quot;table&quot;) |&gt; 
-  rvest::html_table() </code></pre>
+crash_page &lt;- rvest::read_html(crash_url, encoding = &quot;ISO-8859-1&quot;)
+
+# This should now print without the error
+crash_page</code></pre>
+<pre><code>## {html_document}
+## &lt;html&gt;
+## [1] &lt;head&gt;\n&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8 ...
+## [2] &lt;body&gt;\n&lt;p align=&quot;center&quot;&gt;&lt;b&gt;&lt;font face=&quot;Arial&quot; color=&quot;#B0B6FF&quot; size=&quot;5&quot;&gt; ...</code></pre>
+<pre class="r"><code># How many &lt;table&gt; elements are on the page?
+crash_tables &lt;- crash_page |&gt;
+  rvest::html_elements(&quot;table&quot;) |&gt;
+  rvest::html_table()
+
+# From a cleaning perspective:
+  # Translate this into a pdf 
+  # Replace the current headers with row 1 then delete row 1
+  # Convert date into a date column instead a character
+  # more complex cleaning to split multiple information within a cell into separate columns  (not happening in today&#39;s class-- but try AI)
+
+# using brackets to access df
+crash_df = crash_tables[[1]] # subsetting a list
+
+# assign column names
+colnames(crash_df) = c(crash_df$X1[1], crash_df$X2[1], crash_df$X3[1], crash_df$X4[1])
+
+# drop first row
+crash_df = crash_df[-1, 1:4] # delete row 1 and keep columns 1:4 (since no negative) (or leave it blank)
+
+# convert date column into a date type object
+crash_df = crash_df |&gt; 
+  dplyr::mutate(Date = lubridate::dmy(Date))
+
+dplyr::glimpse(crash_df)</code></pre>
+<pre><code>## Rows: 14
+## Columns: 4
+## $ Date                           &lt;date&gt; 2025-01-07, 2025-01-29, 2025-01-29, 20…
+## $ `Location / Operator`          &lt;chr&gt; &quot;Off Rottnest Island, WA, AustraliaSwan…
+## $ `Aircraft Type / Registration` &lt;chr&gt; &quot;Cessna 208 Caravan 675VH-WTY&quot;, &quot;Canada…
+## $ Fatalities                     &lt;chr&gt; &quot;3/7(0)&quot;, &quot;67/67(0)&quot;, &quot;20/21(0)&quot;, &quot;6/6(…</code></pre>
 </div>
 
-<div id="rmd-source-code">LS0tDQp0aXRsZTogJ0NsYXNzIDExOiBTY3JhcGluZyBNdWx0aXBsZSBXZWJwYWdlcycNCmF1dGhvcjogIkxpbmRzZXkgQ2Fyb3RoZXJzIg0KZGF0ZTogIjIwMjYtMDktMzAiDQpvdXRwdXQ6IA0KICBodG1sX2RvY3VtZW50Og0KICAgIHRvYzogdHJ1ZQ0KICAgIHRvY19mbG9hdDogdHJ1ZQ0KICAgIGNvZGVfZG93bmxvYWQ6IHRydWUNCiAgICBjb2RlX2ZvbGRpbmc6IHNob3cNCiAgICB0aGVtZTogc2ltcGxleA0KLS0tDQoNCmBgYHtyIHNldHVwLCBpbmNsdWRlPUZBTFNFfQ0Ka25pdHI6Om9wdHNfY2h1bmskc2V0KGVjaG8gPSBUUlVFKQ0KYGBgDQoNCiMjIExlYXJuaW5nIE9iamVjdGl2ZXMNCg0KLSBCZSBhYmxlIHRvIHNjcmFwZSBtdWx0aXBsZSB3ZWJwYWdlcyAoZnJvbSB0aGUgc2FtZSBzaXRlKSwgdXNpbmcgYSAnZm9yJyBsb29wIHR5cGUgYXBwcm9hY2gNCi0gQmUgYWJsZSB0byBzY3JhcGUgbXVsdGlwbGUgd2VicGFnZXMgKGZyb20gdGhlIHNhbWUgc2l0ZSkgdXNpbmcgdGhlIFtwdXJyciBwYWNrYWdlXShodHRwczovL3B1cnJyLnRpZHl2ZXJzZS5vcmcvKSwgd2hpY2ggaXMgYSBmdW5jdGlvbmFsIHByb2dyYW1taW5nIGFwcHJvYWNoDQogIC0gKipOb3RlKio6IEluIHRoaXMgcGFja2FnZSB3ZSB3aWxsIGNyZWF0ZSBvdXIgb3duIGZ1bmN0aW9uIA0KICANCiMjIFJlLWV4YW1pbmluZyB0aGUgYnVsbGV0aW4gZXhhbXBsZQ0KDQpMZXQncyB0cnkgdG8gZXhwYW5kIG9uIHRoZSBleGFtcGxlIGZyb20gbGFzdCBjbGFzcyB0byBpbmNsdWRlIHRoZSBmb2xsb3dpbmc6IA0KW0FDQ10oaHR0cHM6Ly9idWxsZXRpbi5taWFtaW9oLmVkdS9jb3Vyc2VzLWluc3RydWN0aW9uL2FjYy8pLCANCltCVVNdKGh0dHBzOi8vYnVsbGV0aW4ubWlhbWlvaC5lZHUvY291cnNlcy1pbnN0cnVjdGlvbi9idXMvKSwNCltJU0FdKGh0dHBzOi8vYnVsbGV0aW4ubWlhbWlvaC5lZHUvY291cnNlcy1pbnN0cnVjdGlvbi9pc2EvKSwgYW5kDQpbTUtUXShodHRwczovL2J1bGxldGluLm1pYW1pb2guZWR1L2NvdXJzZXMtaW5zdHJ1Y3Rpb24vbWt0LykuDQoNCioqQ09NTUVOVCoqOiBZb3UgY2FuIHJlcGVhdCB5b3VyIGNvZGUgYSBmZXcgdGltZSB3aXRoIGNoYW5naW5nIHRoZSBVUkwuIHRoaXMgd2lsbCB3b3JrIGZvciBhIGZldyBsaW5rcyBidXQgd291bGQgYmUgcXVpdGUgdGVkaW91cyBmb3IgbGFyZ2UgYW1vdW50IG9mIHNjcmFwaW5nLiBXZSB3aWxsIGZvbGxvdyAqKkRSWSBQcmluY2lwbGUqKiwgd2hpY2ggc3RhbmRzIGZvciAqKkRvbid0IFJlcGVhdCBZb3Vyc2VsZioqLg0KDQpgYGB7ciBidWxsZXRpbn0NCmRlcHRfYWJicnYgPSBjKCdhY2MnLCAnYnVzJywgJ2lzYScsICdta3QnKQ0KDQpjb3Vyc2VzX2RmID0gZGF0YS5mcmFtZSgpICMgaW5pdGlhbGl6aW5nIGEgY29udGFpbmVyIHRvIHN0b3JlIHN0dWZmIGluIGZyb20gdGhlIGxvb3ANCg0KIyBmb3IgKHZhcmlhYmxlIGluIHZlY3Rvcikge30NCg0KZm9yIChhYmJydiBpbiBkZXB0X2FiYnJ2KSB7DQogIGNhdChyZXAoIi0iLCA1MCksICJcbiIpDQogIHByaW50KGFiYnJ2KQ0KICANCiAgYnVsbGV0aW5fdXJsID0gcGFzdGUwKA0KICAgICdodHRwczovL2J1bGxldGluLm1pYW1pb2guZWR1L2NvdXJzZXMtaW5zdHJ1Y3Rpb24vJywgYWJicnYsICcvJw0KICAgICkNCg0KICAjIEludGVudGlvbmFsbHkgbWFraW5nIHRoaXMgYW4gUiBvYmplY3QgaW5zdGVhZCBvZiBhIHN0cmluZw0KICAgICMgd2UgY2FuIHJldXNlIHRoZSByZXN0IG9mIG91ciBjb2RlIHdpdGggb25seSBjaGFuZ2luZyB0aGUgVVJMDQogIHdlYnBhZ2UgPSBydmVzdDo6cmVhZF9odG1sKGJ1bGxldGluX3VybCkNCg0KICB3ZWJwYWdlIHw+IA0KICAgIHJ2ZXN0OjpodG1sX2VsZW1lbnRzKCJzdHJvbmciKSB8PiAjIGdldCBhbGwgdGhlIGluZm8gdGhhdCdzIGluICdzdHJvbmcnIG9uIHRoZSB3ZWJwYWdlDQogICAgcnZlc3Q6Omh0bWxfdGV4dDIoKSAtPiB0aXRsZXMgIyBjbGVhbnMgb3V0IHRoZSBodG1sIHRleHQNCg0KICB3ZWJwYWdlIHw+IA0KICAgIHJ2ZXN0OjpodG1sX2VsZW1lbnRzKCIjc2Nfc2Njb3Vyc2VkZXNjcyA+IGRpdiA+IHAuY291cnNlYmxvY2tkZXNjIikgfD4gDQogICAgcnZlc3Q6Omh0bWxfdGV4dDIoKSAtPiBkZXNjcw0KDQogIGRmID0gZGF0YS5mcmFtZSh0aXRsZSA9IHRpdGxlcywgZGVzYyA9IGRlc2NzKQ0KICBjb3Vyc2VzX2RmID0gcmJpbmQoY291cnNlc19kZiwgZGYpDQp9DQpgYGANCg0KIyMgJ3B1cnJyJyBhcHByb2FjaCBmb3IgdGhlIHNhbWUgcHJvYmxlbQ0KDQpUaGlzIGlzIGEgZnVuY3Rpb25hbCBwcm9ncmFtbWluZyBhcHByb2FjaCwgYW5kIHdlIHdpbGwgd3JpdGUgb3VyIG93biBmdW5jdGlvbi4gSW4gUiwgd2UgdXNlIGZ1bmN0aW9uIGNhbGxlZCAnZnVuY3Rpb24nIHRvIGNyZWF0ZSBhIGZ1bmN0aW9uLiBhcyBvcHBvc2VkIHRvIFB5dGhvbiwgUiBmdW5jdGlvbnMgcmV0dXJuIGEgc2luZ2xlIG9iamVjdC4NCg0KYGBge3J9DQojIFRoaXMgZnVuY3Rpb24gdGFrZXMgYW4gYWJicnYgYXMgYW4gaW5wdXQgYW5kIHJldHVybnMgYSBkYXRhX2ZyYW1lIGFzIGFuIG91dHB1dA0KDQpzY3JhcGVfbXVfYnVsbGV0aW4gPSBmdW5jdGlvbihhYmJydil7DQogIGJ1bGxldGluX3VybCA9IHBhc3RlMCgNCiAgICAnaHR0cHM6Ly9idWxsZXRpbi5taWFtaW9oLmVkdS9jb3Vyc2VzLWluc3RydWN0aW9uLycsIGFiYnJ2LCAnLycNCiAgICApDQoNCiAgd2VicGFnZSA9IHJ2ZXN0OjpyZWFkX2h0bWwoYnVsbGV0aW5fdXJsKQ0KDQogIHdlYnBhZ2UgfD4gDQogICAgcnZlc3Q6Omh0bWxfZWxlbWVudHMoInAuY291cnNlYmxvY2t0aXRsZSIpIHw+IA0KICAgIHJ2ZXN0OjpodG1sX3RleHQyKCkgLT4gdGl0bGVzIA0KDQogIHdlYnBhZ2UgfD4gDQogICAgcnZlc3Q6Omh0bWxfZWxlbWVudHMoIiNzY19zY2NvdXJzZWRlc2NzID4gZGl2ID4gcC5jb3Vyc2VibG9ja2Rlc2MiKSB8PiANCiAgICBydmVzdDo6aHRtbF90ZXh0MigpIC0+IGRlc2NzDQoNCiAgZGYgPSBkYXRhLmZyYW1lKHRpdGxlID0gdGl0bGVzLCBkZXNjID0gZGVzY3MpDQogIHJldHVybihkZikNCn0NCg0KdGVzdDEgPSBzY3JhcGVfbXVfYnVsbGV0aW4oJ21ndCcpDQp0ZXN0MiA9IHNjcmFwZV9tdV9idWxsZXRpbignZmluJykNCnRlc3QzID0gc2NyYXBlX211X2J1bGxldGluKCdlY28nKQ0KDQojIHRvIHVzZSBmdW5jdGlvbnMgZnJvbSBwdXJyciwgd2Ugd2lsbCB1c2UgYSBtYXBfKigpLCBhIHJtYXAyXyooKSwgb3IgYSBwbWFwXyooKQ0KICAjIG1hcCB1c2VzIGEgZnVuY3Rpb24gdGhhdCB0YWtlcyBhIHNpbmdsZSBpbnB1dCAob3IgeW91IGFyZSBvbmx5IGNoYW5naW5nIGEgc2luZ2xlIGlucHV0KQ0KICAjIG1hcDIgdXNlcyBhIGZ1bmN0aW9uIHRoYXQgdGFrZXMgdHdvIGlucHV0cw0KICAjIHBtYXAgPj0gMw0KIyBhZnRlciB0aGUgXywgeW91IHB1dCB0aGUgdHlwZSBvZiBvYmplY3QgeW91IGFyZSBnZXR0aW5nIGJhY2sNCg0KIyAueCBpcyB0aGUgdmVjdG9yIHRoYXQgd2Ugd2lsbCBpdGVyYXRlIG92ZXINCiAgIyBhbmQgLmYgaXMgdGhlIGZ1bmN0aW9uIHdlIHVzZQ0KY291cnNlc19kZl9mcm9tX3B1cnJyID0gcHVycnI6Om1hcF9kZigueCA9IGRlcHRfYWJicnYsIC5mID0gc2NyYXBlX211X2J1bGxldGluKQ0KYGBgDQoNCiMjIFNjcmFwZSBkYXRhIGZyb20gdGhlIHdlYnNpdGUgW3BsYW5lY3Jhc2hpbmZvXShodHRwczovL3d3dy5wbGFuZWNyYXNoaW5mby5jb20vKQ0KDQpDb250YWlucyBhIGRhdGFiYXNlIG9mIHBsYW5lIGNyYXNoZXMgYnkgeWVhci4NCg0KYGBge3IsIGV2YWwgPSBGQUxTRX0NCnllYXIgPSAyMDI1DQoNCmNyYXNoX3VybCA9IHBhc3RlMCgNCiAgImh0dHBzOi8vd3d3LnBsYW5lY3Jhc2hpbmZvLmNvbS8iLCB5ZWFyLCAiLyIsIHllYXIsICIuaHRtIikNCiAgDQpjcmFzaF9wYWdlID0gcnZlc3Q6OnJlYWRfaHRtbChjcmFzaF91cmwpDQoNCmNyYXNoX3RhYmxlcyA8LSBjcmFzaF9wYWdlIHw+IA0KICBydmVzdDo6aHRtbF9lbGVtZW50cygidGFibGUiKSB8PiANCiAgcnZlc3Q6Omh0bWxfdGFibGUoKSANCmBgYA0KDQoNCg0KDQoNCg0KDQo=</div>
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIkNsYXNzIDEyIg0KYXV0aG9yOiAiTGluZHNleSBDYXJvdGhlcnMiDQpkYXRlOiAiMjAyNi0xMC0wNSINCm91dHB1dDogDQogIGh0bWxfZG9jdW1lbnQ6DQogICAgdG9jOiB0cnVlDQogICAgdG9jX2Zsb2F0OiB0cnVlDQogICAgY29kZV9kb3dubG9hZDogdHJ1ZQ0KICAgIGNvZGVfZm9sZGluZzogc2hvdw0KICAgIHRoZW1lOiBzaW1wbGV4DQotLS0NCg0KYGBge3Igc2V0dXAsIGluY2x1ZGU9RkFMU0V9DQprbml0cjo6b3B0c19jaHVuayRzZXQoZWNobyA9IFRSVUUpDQpgYGANCg0KDQojIENvbnRpbnVpbmcgd2l0aCB0aGUgcGxhbmUgY3Jhc2ggaW5mbyBleGFtcGxlDQpgYGB7cn0NCnllYXIgPSAyMDI1DQoNCmNyYXNoX3VybCA9IHBhc3RlMCgnaHR0cHM6Ly93d3cucGxhbmVjcmFzaGluZm8uY29tLycsIHllYXIsICcvJywgeWVhciwgJy5odG0nKQ0KDQpjcmFzaF9wYWdlIDwtIHJ2ZXN0OjpyZWFkX2h0bWwoY3Jhc2hfdXJsLCBlbmNvZGluZyA9ICJJU08tODg1OS0xIikNCg0KIyBUaGlzIHNob3VsZCBub3cgcHJpbnQgd2l0aG91dCB0aGUgZXJyb3INCmNyYXNoX3BhZ2UNCg0KIyBIb3cgbWFueSA8dGFibGU+IGVsZW1lbnRzIGFyZSBvbiB0aGUgcGFnZT8NCmNyYXNoX3RhYmxlcyA8LSBjcmFzaF9wYWdlIHw+DQogIHJ2ZXN0OjpodG1sX2VsZW1lbnRzKCJ0YWJsZSIpIHw+DQogIHJ2ZXN0OjpodG1sX3RhYmxlKCkNCg0KIyBGcm9tIGEgY2xlYW5pbmcgcGVyc3BlY3RpdmU6DQogICMgVHJhbnNsYXRlIHRoaXMgaW50byBhIHBkZiANCiAgIyBSZXBsYWNlIHRoZSBjdXJyZW50IGhlYWRlcnMgd2l0aCByb3cgMSB0aGVuIGRlbGV0ZSByb3cgMQ0KICAjIENvbnZlcnQgZGF0ZSBpbnRvIGEgZGF0ZSBjb2x1bW4gaW5zdGVhZCBhIGNoYXJhY3Rlcg0KICAjIG1vcmUgY29tcGxleCBjbGVhbmluZyB0byBzcGxpdCBtdWx0aXBsZSBpbmZvcm1hdGlvbiB3aXRoaW4gYSBjZWxsIGludG8gc2VwYXJhdGUgY29sdW1ucyAgKG5vdCBoYXBwZW5pbmcgaW4gdG9kYXkncyBjbGFzcy0tIGJ1dCB0cnkgQUkpDQoNCiMgdXNpbmcgYnJhY2tldHMgdG8gYWNjZXNzIGRmDQpjcmFzaF9kZiA9IGNyYXNoX3RhYmxlc1tbMV1dICMgc3Vic2V0dGluZyBhIGxpc3QNCg0KIyBhc3NpZ24gY29sdW1uIG5hbWVzDQpjb2xuYW1lcyhjcmFzaF9kZikgPSBjKGNyYXNoX2RmJFgxWzFdLCBjcmFzaF9kZiRYMlsxXSwgY3Jhc2hfZGYkWDNbMV0sIGNyYXNoX2RmJFg0WzFdKQ0KDQojIGRyb3AgZmlyc3Qgcm93DQpjcmFzaF9kZiA9IGNyYXNoX2RmWy0xLCAxOjRdICMgZGVsZXRlIHJvdyAxIGFuZCBrZWVwIGNvbHVtbnMgMTo0IChzaW5jZSBubyBuZWdhdGl2ZSkgKG9yIGxlYXZlIGl0IGJsYW5rKQ0KDQojIGNvbnZlcnQgZGF0ZSBjb2x1bW4gaW50byBhIGRhdGUgdHlwZSBvYmplY3QNCmNyYXNoX2RmID0gY3Jhc2hfZGYgfD4gDQogIGRwbHlyOjptdXRhdGUoRGF0ZSA9IGx1YnJpZGF0ZTo6ZG15KERhdGUpKQ0KDQpkcGx5cjo6Z2xpbXBzZShjcmFzaF9kZikNCmBgYA==</div>
 
 
 </div>
@@ -1761,7 +1691,7 @@ $(document).ready(function () {
 <!-- code folding -->
 <script>
 $(document).ready(function () {
-  window.initializeSourceEmbed("Class 11.Rmd");
+  window.initializeSourceEmbed("Class 12.Rmd");
   window.initializeCodeFolding("show" === "show");
 });
 </script>

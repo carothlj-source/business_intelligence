@@ -1,0 +1,92 @@
+---
+title: "Class 12"
+author: "Lindsey Carothers"
+date: "2026-10-05"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    code_download: true
+    code_folding: show
+    theme: simplex
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+# Continuing with the Plane Crash Info Example
+```{r}
+year = 2025
+
+crash_url = paste0('https://www.planecrashinfo.com/', year, '/', year, '.htm')
+
+crash_page <- rvest::read_html(crash_url, encoding = "ISO-8859-1")
+
+# This should now print without the error
+crash_page
+
+# How many <table> elements are on the page?
+crash_tables <- crash_page |>
+  rvest::html_elements("table") |>
+  rvest::html_table()
+
+# From a cleaning perspective:
+  # Translate this into a pdf 
+  # Replace the current headers with row 1 then delete row 1
+  # Convert date into a date column instead a character
+  # more complex cleaning to split multiple information within a cell into separate columns  (not happening in today's class-- but try AI)
+
+# using brackets to access df
+crash_df = crash_tables[[1]] # subsetting a list
+
+# assign column names
+colnames(crash_df) = c(crash_df$X1[1], crash_df$X2[1], crash_df$X3[1], crash_df$X4[1])
+
+# drop first row
+crash_df = crash_df[-1, 1:4] # delete row 1 and keep columns 1:4 (since no negative) (or leave it blank)
+
+# convert date column into a date type object
+crash_df = crash_df |> 
+  dplyr::mutate(Date = lubridate::dmy(Date))
+
+dplyr::glimpse(crash_df)
+```
+
+# Practice Salvage Run
+
+```{r}
+page = rvest::read_html("https://isa401-salvage.vercel.app/registry?start=1")
+classes = page |>
+  rvest::html_elements(".Dreadnought") |>
+  rvest::html_text2()
+length(classes)   # check this first: one per card
+```
+```{r}
+base = "https://isa401-salvage.vercel.app"
+starts = seq(from = 1, to = 351, by = 50)
+pages = vector("list", length(starts)) # initializing the list (similar to initializing the df)
+
+for (i in seq_along(starts)) {
+  pg = rvest::read_html(paste0(base, "/registry?start=", starts[i]))
+  pages[[i]] = data.frame(
+    class = pg |> 
+      rvest::html_elements("div > ul > li:nth-child(1) > span") |> # corresponds to the first row (telling us the class), you can copy the path like this or use `.ship-class`
+      rvest::html_text2(),
+    value = pg |> 
+      rvest::html_elements("div > ul > li:nth-child(3) > span") |> # corresponds to the third row (telling us the est. salvage), you can copy the path like this or use `.salvage-value`
+      rvest::html_text2() |> 
+      readr::parse_number()
+  )
+  Sys.sleep(1)   # robots.txt asks for it
+}
+registry = dplyr::bind_rows(pages)   # 400 rows?
+
+dreadnought_df = registry |> 
+  dplyr::filter(class=="Dreadnought")
+
+sum(dreadnought_df$value)
+```
+- **copy selector form the webpage**
+

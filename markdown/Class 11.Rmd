@@ -108,7 +108,7 @@ courses_df_from_purrr = purrr::map_df(.x = dept_abbrv, .f = scrape_mu_bulletin)
 
 Contains a database of plane crashes by year.
 
-```{r}
+```{r, eval = FALSE}
 year = 2025
 
 crash_url = paste0(
