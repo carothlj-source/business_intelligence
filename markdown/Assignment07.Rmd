@@ -1,0 +1,105 @@
+---
+title: 'Assignment 07: Web Scraping the FSB Directory'
+author: "Lindsey Carothers"
+date: "2026-10-05"
+output: 
+  html_document:
+    code_download: true
+    code_folding: show
+    theme: readable
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Currently, the Farmer School of Business has the following academic departments:
+
+
+- Accountancy
+
+- Economics
+
+- Entrepreneurship
+
+- Finance
+
+- Information Systems & Analytics
+
+- Marketing
+
+- Management
+
+
+Please write code that will produce and print a single data frame (or tibble) containing information on ALL departments and the following variables:
+
+&emsp;[a] department name or abbreviation,
+
+&emsp;[b] faculty/staff's name,
+  
+&emsp;[c] faculty/staff's position, and
+  
+&emsp;[d] faculty/staff's website.
+
+Please print out the first few observations from the data frame using `head()`.
+
+
+```{r}
+departments = c(
+  "Accountancy",
+  "Economics",
+  "Entrepreneurship",
+  "Finance",
+  "Information Systems & Analytics",
+  "Marketing",
+  "Management"
+)
+
+url_departments = c(
+  "Accountancy",
+  "Economics",
+  "Entrepreneurship",
+  "Finance",
+  "Information%20Systems%20--%20Analytics",
+  "Marketing",
+  "Management"
+)
+
+fsb_df = data.frame()
+
+for (i in 1:7) {
+  
+  url = paste0(
+    "https://miamioh.edu/fsb/directory/?up=/query/all/all/",
+    url_departments[i],
+    "/all"
+  )
+  
+  webpage = rvest::read_html(url)
+  
+  names = webpage |>
+    rvest::html_elements("table strong a") |>
+    rvest::html_text2()
+  
+  positions = webpage |>
+    rvest::html_elements("table td i") |>
+    rvest::html_text()
+  
+  websites = webpage |>
+    rvest::html_elements("table strong a") |>
+    rvest::html_attr("href")
+  
+  df = data.frame(
+    department = departments[i],
+    name = names,
+    position = positions,
+    website = websites
+  )
+  
+  fsb_df = rbind(fsb_df, df)
+}
+
+head(fsb_df)
+```
+
+
